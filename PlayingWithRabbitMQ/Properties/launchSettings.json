@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RunMe": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}
