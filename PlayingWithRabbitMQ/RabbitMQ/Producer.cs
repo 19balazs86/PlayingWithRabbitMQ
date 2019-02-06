@@ -16,6 +16,8 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     private readonly string _exchangeName;
     private readonly string _routingKey;
 
+    private bool _isDisposed = false;
+
     public Producer(IConnection connection, IModel model, string exchangeName, string routingKey)
     {
       _connection   = connection;      
@@ -28,10 +30,17 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     /// Publish a message.
     /// </summary>
     /// <exception cref="ProducerException"></exception>
+    /// <exception cref="ObjectDisposedException"></exception>
     public void Publish(byte[] message, string contentType)
     {
+      if (_isDisposed)
+        throw new ObjectDisposedException("Producer is already disposed.");
+
       if (message is null || message.Length == 0)
         throw new ArgumentNullException(nameof(message));
+
+      if (string.IsNullOrWhiteSpace(contentType))
+        throw new ArgumentException("ContentType can not be empty.");
 
       IBasicProperties props = _model.CreateBasicProperties();
 
@@ -55,6 +64,7 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     /// Publish a message.
     /// </summary>
     /// <exception cref="ProducerException"></exception>
+    /// <exception cref="ObjectDisposedException"></exception>
     public void Publish(string messageText, string contentType = MediaTypeNames.Application.Json)
     {
       if (string.IsNullOrWhiteSpace(messageText))
@@ -67,6 +77,7 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     /// Publish a message.
     /// </summary>
     /// <exception cref="ProducerException"></exception>
+    /// <exception cref="ObjectDisposedException"></exception>
     public void Publish(object message)
     {
       if (message is null)
@@ -77,8 +88,10 @@ namespace PlayingWithRabbitMQ.RabbitMQ
 
     public void Dispose()
     {
-      _model?.Close();
-      _connection?.Close();
+      _isDisposed = true;
+
+      if (_model.IsOpen) _model.Close();
+      if (_connection.IsOpen) _connection.Close();
     }
   }
 }
