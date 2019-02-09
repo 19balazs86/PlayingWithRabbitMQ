@@ -4,14 +4,14 @@ This .Net Core application is a complete example (framework) to publish and cons
 
 ![](https://www.cloudamqp.com/img/docs/camqp.png)
 
-In order to put it into play, you need a RabbitMQ server.
+In order to put it into play, you need a RabbitMQ server. Install it locally: [Windows](http://www.rabbitmq.com/install-windows.html "Windows") |  Docker | [CloudAMQP](https://www.cloudamqp.com/plans.html "CloudAMQP") free plan: Little Lemur - For Development.
 
-- Server: Locally: [Windows](http://www.rabbitmq.com/install-windows.html "Windows") |  Docker | [CloudAMQP](https://www.cloudamqp.com/plans.html "CloudAMQP") free plan: Little Lemur - For Development.
-- [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client "Nuget package") for RabbitMQ .NET Client.
-- [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html "API Documentation").
-- [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client "GitHub page").
+##### .NET Libraries for RabbitMQ
+- RabbitMQ.Client: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client "Nuget package") | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client "GitHub page") | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html "API Documentation").
+- [Mass Transit](http://masstransit-project.com "Mass Transit"): CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html "documentation section") has a recommendation for this service bus implementation.
+- [RawRabbit](https://rawrabbit.readthedocs.io/en/master "RawRabbit"): Modern .NET client for communication over RabbitMq, which is written for .NET Core. [GitHub page](https://github.com/pardahlman/RawRabbit "GitHub page").
 
-CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html "documentation section") has a recommendation for [Mass Transit](http://masstransit-project.com "Mass Transit") - "A Service Bus Implementation for .NET with RabbitMQ support." This is such a powerful framework, layer over RabbitMQ. There is a benefit to start with vanilia .NET Client, that you can learn and understand the basics of RabbitMQ.
+There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
 
 ### Components
 #### BrokerFactory
