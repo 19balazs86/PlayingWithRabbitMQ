@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements;
-using PlayingWithRabbitMQ.DemoElements.MessageHandlers;
 using PlayingWithRabbitMQ.RabbitMQ;
 using PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess;
 using PlayingWithRabbitMQ.RabbitMQ.Configuration;
@@ -39,9 +38,17 @@ namespace PlayingWithRabbitMQ
 
       services.AddSingleton(configuration);
 
-      // --> Add: Message handlers.
-      services.AddSingleton<IMessageHandler, LoginMessageHandler>();
-      services.AddSingleton<IMessageHandler, PurchaseMessageHandler>();
+      // --> Add: Message handlers with Scrutor.
+      services.Scan(scan => scan
+        .FromEntryAssembly()
+          .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
+          //.UsingRegistrationStrategy(RegistrationStrategy.Append) // Default is Append.
+          .As<IMessageHandler>()
+          .WithSingletonLifetime());
+
+      // These handlers will be added by Scrutor.
+      //services.AddSingleton<IMessageHandler, LoginMessageHandler>();
+      //services.AddSingleton<IMessageHandler, PurchaseMessageHandler>();
 
       // --> Add: Background services.
       services.AddHostedService<ProducerBackgroundService>(); // Demo purpose.

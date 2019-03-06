@@ -106,6 +106,7 @@ public class LoginMessageHandler : MessageHandlerBase<LoginMessage>
 
 #### Configure services
 - Initialize the DI container.
+- [Scrutor](https://github.com/khellang/Scrutor "Scrutor"): [Using Scrutor to automatically register services with ASP.NET Core DI container](https://andrewlock.net/using-scrutor-to-automatically-register-your-services-with-the-asp-net-core-di-container "Using Scrutor to automatically register services with ASP.NET Core DI container").
 
 ```csharp
 private void configureServices(HostBuilderContext hostContext, IServiceCollection services)
@@ -116,9 +117,12 @@ private void configureServices(HostBuilderContext hostContext, IServiceCollectio
 
     services.AddSingleton(configuration);
 
-    // --> Add: Message handlers.
-    services.AddSingleton<IMessageHandler, LoginMessageHandler>();
-    services.AddSingleton<IMessageHandler, PurchaseMessageHandler>();
+    // --> Add: Message handlers with Scrutor.
+    services.Scan(scan => scan
+        .FromEntryAssembly()
+            .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
+            .As<IMessageHandler>()
+            .WithSingletonLifetime());
 
     // --> Add: Background services.
     services.AddHostedService<ProducerBackgroundService>(); // Demo purpose.
