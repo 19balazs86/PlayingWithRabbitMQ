@@ -7,16 +7,14 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
   {
     private readonly object _message;
 
-    public string Data
-      => JsonConvert.SerializeObject(_message);
+    public string Data => JsonConvert.SerializeObject(_message);
 
     public Message(object message)
     {
       _message = message;
     }
 
-    public T GetDataAs<T>() where T : class, new()
-      => _message as T;
+    public T GetDataAs<T>() where T : class, new() => _message as T;
 
     public void Acknowledge()
       => Log.Verbose($"InMemory - Acknowledge message({_message.GetType().Name}).");
