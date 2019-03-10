@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
-using PlayingWithRabbitMQ.RabbitMQ.Exceptions;
+using PlayingWithRabbitMQ.Queue.Configuration;
+using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public class BrokerFactory : IBrokerFactory
   {

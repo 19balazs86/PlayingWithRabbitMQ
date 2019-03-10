@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
+namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
   public class SynchronizedList<T> : IList<T>, ICollection
   {

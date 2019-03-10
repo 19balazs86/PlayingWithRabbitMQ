@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue
 {
   public interface IProducer : IDisposable
   {

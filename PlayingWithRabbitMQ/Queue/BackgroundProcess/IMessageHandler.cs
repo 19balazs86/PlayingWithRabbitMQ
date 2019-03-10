@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue.Configuration;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
+namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
   public interface IMessageHandler
   {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.Configuration
+namespace PlayingWithRabbitMQ.Queue.Configuration
 {
   public static class ConfigurationExtensions
   {

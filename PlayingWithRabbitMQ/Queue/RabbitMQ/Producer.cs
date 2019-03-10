@@ -2,11 +2,11 @@
 using System.Net.Mime;
 using System.Text;
 using Newtonsoft.Json;
-using PlayingWithRabbitMQ.RabbitMQ.Exceptions;
+using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public class Producer : IProducer
   {

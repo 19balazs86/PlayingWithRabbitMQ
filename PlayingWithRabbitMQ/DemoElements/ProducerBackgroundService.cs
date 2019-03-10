@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements.Messages;
-using PlayingWithRabbitMQ.RabbitMQ;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue;
+using PlayingWithRabbitMQ.Queue.Configuration;
 
 namespace PlayingWithRabbitMQ.DemoElements
 {

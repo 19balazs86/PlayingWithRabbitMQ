@@ -1,4 +1,4 @@
-﻿namespace PlayingWithRabbitMQ.RabbitMQ
+﻿namespace PlayingWithRabbitMQ.Queue
 {
   public interface IMessage
   {

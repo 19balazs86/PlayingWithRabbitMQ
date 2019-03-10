@@ -1,7 +1,7 @@
 ﻿using System;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue.Configuration;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue
 {
   public interface IBrokerFactory
   {

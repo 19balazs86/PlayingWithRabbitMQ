@@ -3,9 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements;
-using PlayingWithRabbitMQ.RabbitMQ;
-using PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue;
+using PlayingWithRabbitMQ.Queue.BackgroundProcess;
+using PlayingWithRabbitMQ.Queue.Configuration;
+using PlayingWithRabbitMQ.Queue.RabbitMQ;
 using Serilog;
 
 namespace PlayingWithRabbitMQ

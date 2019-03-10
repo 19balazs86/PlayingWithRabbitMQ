@@ -1,4 +1,4 @@
-﻿namespace PlayingWithRabbitMQ.RabbitMQ.Configuration
+﻿namespace PlayingWithRabbitMQ.Queue.Configuration
 {
   /// <summary>
   /// The Producer publish messages to the given exchange with the route key.

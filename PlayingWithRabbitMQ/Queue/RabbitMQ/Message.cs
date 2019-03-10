@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
-using PlayingWithRabbitMQ.RabbitMQ.Exceptions;
+using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public class Message : IMessage
   {

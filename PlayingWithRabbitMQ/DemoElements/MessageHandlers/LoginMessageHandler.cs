@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using PlayingWithRabbitMQ.DemoElements.Messages;
-using PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue.BackgroundProcess;
+using PlayingWithRabbitMQ.Queue.Configuration;
 using Serilog;
 
 namespace PlayingWithRabbitMQ.DemoElements.MessageHandlers

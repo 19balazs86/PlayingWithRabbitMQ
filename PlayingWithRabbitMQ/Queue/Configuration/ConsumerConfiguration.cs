@@ -1,4 +1,4 @@
-﻿namespace PlayingWithRabbitMQ.RabbitMQ.Configuration
+﻿namespace PlayingWithRabbitMQ.Queue.Configuration
 {
   /// <summary>
   /// The Consumer can consume the given queue.

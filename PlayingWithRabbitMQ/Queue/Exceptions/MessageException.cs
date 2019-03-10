@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.Exceptions
+namespace PlayingWithRabbitMQ.Queue.Exceptions
 {
   public class MessageException : RabbitMQException
   {

@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace PlayingWithRabbitMQ.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public class Consumer : IConsumer
   {

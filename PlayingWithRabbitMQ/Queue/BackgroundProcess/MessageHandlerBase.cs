@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using PlayingWithRabbitMQ.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue.Configuration;
 using Serilog;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
+namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
   public abstract class MessageHandlerBase<TMessage> : IMessageHandler where TMessage : class, new()
   {

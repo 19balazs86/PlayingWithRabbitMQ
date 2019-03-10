@@ -5,10 +5,10 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using PlayingWithRabbitMQ.RabbitMQ.Exceptions;
+using PlayingWithRabbitMQ.Queue.Exceptions;
 using Serilog;
 
-namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
+namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
   public class ConsumingBackgroundService : BackgroundService
   {
