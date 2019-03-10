@@ -1,4 +1,4 @@
-﻿namespace PlayingWithRabbitMQ.Queue.Configuration
+﻿namespace PlayingWithRabbitMQ.Queue.RabbitMQ.Configuration
 {
   public class BrokerFactoryConfiguration
   {

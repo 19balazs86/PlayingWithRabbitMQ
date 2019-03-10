@@ -14,6 +14,11 @@ In order to put it into play, you need a RabbitMQ server. Install it locally: [W
 There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
 
 ### Components
+#### In-memory queue for test
+- By default the application running in development mode using in-memory queue.
+- The in-memory queue is built on BufferBlock ([System.Threading.Tasks.Dataflow](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.dataflow?view=netcore-2.2 "System.Threading.Tasks.Dataflow")).
+- Some links about the TPL Dataflow topic in my [PlayingWithObserver](https://github.com/19balazs86/PlayingWithObserver "PlayingWithObserver") repository.
+
 #### BrokerFactory
 - With the proper configuration you can create **Producer** (publish messages) and **Consumer** (consume messages).
 

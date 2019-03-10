@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "RunMe": {
+    "RunMe-dev": {
       "commandName": "Project",
       "commandLineArgs": ""
+    },
+    "RunMe-prod": {
+      "commandName": "Project",
+      "commandLineArgs": "--prod"
     }
   }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using PlayingWithRabbitMQ.Queue.Configuration;
 using PlayingWithRabbitMQ.Queue.Exceptions;
+using PlayingWithRabbitMQ.Queue.RabbitMQ.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 

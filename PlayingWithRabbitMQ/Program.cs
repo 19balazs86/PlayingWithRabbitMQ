@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements;
 using PlayingWithRabbitMQ.Queue;
 using PlayingWithRabbitMQ.Queue.BackgroundProcess;
-using PlayingWithRabbitMQ.Queue.Configuration;
-using PlayingWithRabbitMQ.Queue.RabbitMQ;
+using PlayingWithRabbitMQ.Queue.RabbitMQ.Configuration;
 using Serilog;
 
 namespace PlayingWithRabbitMQ
@@ -16,6 +16,7 @@ namespace PlayingWithRabbitMQ
     public static async Task Main(string[] args)
     {
       IHostBuilder hostBuilder = new HostBuilder()
+        .UseEnvironment(args.Contains("--prod") ? EnvironmentName.Production : EnvironmentName.Development)
         .ConfigureAppConfiguration(configureAppConfiguration)
         .ConfigureServices(configureServices)
         .UseSerilog(configureLogger);
@@ -27,16 +28,24 @@ namespace PlayingWithRabbitMQ
     {
       IConfiguration configuration = hostContext.Configuration;
 
-      BrokerFactoryConfiguration brokerFactoryConfiguration = new BrokerFactoryConfiguration
+      // -- Add: BrokerFactory depending on the environment.
+      if (hostContext.HostingEnvironment.IsProduction())
       {
-        Url                       = configuration["RabbitMQ_ConnString"],
-        DefaultDeadLetterExchange = "message.morgue",
-        DefaultDeadLetterQueue    = "message.morgue.sink"
-      };
+        BrokerFactoryConfiguration brokerFactoryConfiguration = new BrokerFactoryConfiguration
+        {
+          Url                       = configuration["RabbitMQ_ConnString"],
+          DefaultDeadLetterExchange = "message.morgue",
+          DefaultDeadLetterQueue    = "message.morgue.sink"
+        };
 
-      services.AddSingleton(brokerFactoryConfiguration);
-      services.AddSingleton<IBrokerFactory, BrokerFactory>();
+        services.AddSingleton(brokerFactoryConfiguration);
 
+        services.AddSingleton<IBrokerFactory, Queue.RabbitMQ.BrokerFactory>();
+      }
+      else
+        services.AddSingleton<IBrokerFactory, Queue.InMemory.BrokerFactory>();
+
+      // This configuration needs to publish and consume messages.
       services.AddSingleton(configuration);
 
       // --> Add: Message handlers with Scrutor.
