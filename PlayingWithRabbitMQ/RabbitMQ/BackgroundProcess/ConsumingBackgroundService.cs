@@ -64,8 +64,15 @@ namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
 
       Log.Information("Stop consuming messages.");
 
-      // Waiting for the handlers to finish the process.
-      await Task.WhenAll(_handlerTasks);
+      try
+      {
+        // Waiting for the handlers to finish the process.
+        await Task.WhenAll(_handlerTasks);
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Unexpected exception occurred during waiting for the handlers to finish the process.");
+      }
 
       // Dispose all consumers to close the connections.
       _consumers.ForEach(consumer => consumer.Dispose());
@@ -94,7 +101,8 @@ namespace PlayingWithRabbitMQ.RabbitMQ.BackgroundProcess
       }
       finally
       {
-        _handlerTasks.Remove(handlerTask);
+        if (!stoppingToken.IsCancellationRequested)
+          _handlerTasks.Remove(handlerTask);
       }
     }
 
