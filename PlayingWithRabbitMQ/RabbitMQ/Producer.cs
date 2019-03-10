@@ -29,9 +29,10 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     /// <summary>
     /// Publish a message.
     /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ProducerException"></exception>
     /// <exception cref="ObjectDisposedException"></exception>
-    public void Publish(byte[] message, string contentType)
+    private void publish(byte[] message)
     {
       if (_isDisposed)
         throw new ObjectDisposedException("Producer is already disposed.");
@@ -39,12 +40,9 @@ namespace PlayingWithRabbitMQ.RabbitMQ
       if (message is null || message.Length == 0)
         throw new ArgumentNullException(nameof(message));
 
-      if (string.IsNullOrWhiteSpace(contentType))
-        throw new ArgumentException("ContentType can not be empty.");
-
       IBasicProperties props = _model.CreateBasicProperties();
 
-      props.ContentType     = contentType;
+      props.ContentType     = MediaTypeNames.Application.Json;
       props.ContentEncoding = Encoding.UTF8.WebName;
       props.DeliveryMode    = 2; // Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk.
 
@@ -63,19 +61,7 @@ namespace PlayingWithRabbitMQ.RabbitMQ
     /// <summary>
     /// Publish a message.
     /// </summary>
-    /// <exception cref="ProducerException"></exception>
-    /// <exception cref="ObjectDisposedException"></exception>
-    public void Publish(string messageText, string contentType = MediaTypeNames.Application.Json)
-    {
-      if (string.IsNullOrWhiteSpace(messageText))
-        throw new ArgumentException("Message text can not be empty.");
-
-      Publish(Encoding.UTF8.GetBytes(messageText), contentType);
-    }
-
-    /// <summary>
-    /// Publish a message.
-    /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ProducerException"></exception>
     /// <exception cref="ObjectDisposedException"></exception>
     public void Publish(object message)
@@ -83,7 +69,12 @@ namespace PlayingWithRabbitMQ.RabbitMQ
       if (message is null)
         throw new ArgumentNullException(nameof(message));
 
-      Publish(JsonConvert.SerializeObject(message), MediaTypeNames.Application.Json);
+      if (message.GetType().IsValueType)
+        throw new ArgumentException("Message can not be value type.");
+
+      string messageText = JsonConvert.SerializeObject(message);
+
+      publish(Encoding.UTF8.GetBytes(messageText));
     }
 
     public void Dispose()
