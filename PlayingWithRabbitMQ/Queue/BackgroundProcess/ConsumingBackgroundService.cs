@@ -18,8 +18,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
     private readonly List<IConsumer> _consumers;
     private readonly SynchronizedList<Task> _handlerTasks;
 
-    public ConsumingBackgroundService(IBrokerFactory brokerFactory, IEnumerable<IMessageHandler> messageHandlers,
-      IServiceProvider sp)
+    public ConsumingBackgroundService(IBrokerFactory brokerFactory, IEnumerable<IMessageHandler> messageHandlers)
     {
       _brokerFactory   = brokerFactory;
       _messageHandlers = messageHandlers;
