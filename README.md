@@ -107,7 +107,7 @@ public class ConsumerBackgroundService<T> : BackgroundService
 ```csharp
 public class LoginMessageHandler : IMessageHandler<LoginMessage>
 {
-    public override async Task HandleMessageAsync(LoginMessage msg, CancellationToken)
+    public Task HandleMessageAsync(LoginMessage msg, CancellationToken)
     {
         // Your business logic.
         // DB call.
