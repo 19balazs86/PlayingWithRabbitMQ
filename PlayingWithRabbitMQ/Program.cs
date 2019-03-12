@@ -1,12 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements;
+using PlayingWithRabbitMQ.DemoElements.Messages;
 using PlayingWithRabbitMQ.Queue;
 using PlayingWithRabbitMQ.Queue.BackgroundProcess;
-using PlayingWithRabbitMQ.Queue.RabbitMQ.Configuration;
+using PlayingWithRabbitMQ.Queue.RabbitMQ;
 using Serilog;
 
 namespace PlayingWithRabbitMQ
@@ -28,49 +30,48 @@ namespace PlayingWithRabbitMQ
     {
       IConfiguration configuration = hostContext.Configuration;
 
-      // -- Add: BrokerFactory depending on the environment.
+      // --> Add: BrokerFactory depending on the environment.
       if (hostContext.HostingEnvironment.IsProduction())
       {
-        BrokerFactoryConfiguration brokerFactoryConfiguration = new BrokerFactoryConfiguration
+        var brokerFactoryConfiguration = new BrokerFactoryConfiguration
         {
-          Url                       = configuration["RabbitMQ_ConnString"],
+          Url = Environment.GetEnvironmentVariable("RabbitMQ_ConnString"),
           DefaultDeadLetterExchange = "message.morgue",
           DefaultDeadLetterQueue    = "message.morgue.sink"
         };
 
-        services.AddSingleton(brokerFactoryConfiguration);
-
-        services.AddSingleton<IBrokerFactory, Queue.RabbitMQ.BrokerFactory>();
+        services
+          .AddSingleton(brokerFactoryConfiguration)
+          .AddSingleton<IBrokerFactory, BrokerFactory>();
       }
       else
         services.AddSingleton<IBrokerFactory, Queue.InMemory.BrokerFactory>();
 
-      // This configuration needs to publish and consume messages.
-      services.AddSingleton(configuration);
+      // --> Add: DelaySettings.
+      services.AddSingleton(configuration.BindTo<DelaySettings>());
 
       // --> Add: Message handlers with Scrutor.
       services.Scan(scan => scan
         .FromEntryAssembly()
-          .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
+          .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))
           //.UsingRegistrationStrategy(RegistrationStrategy.Append) // Default is Append.
-          .As<IMessageHandler>()
+          .AsImplementedInterfaces()
           .WithSingletonLifetime());
 
       // These handlers will be added by Scrutor.
-      //services.AddSingleton<IMessageHandler, LoginMessageHandler>();
-      //services.AddSingleton<IMessageHandler, PurchaseMessageHandler>();
+      //services.AddSingleton<IMessageHandler<LoginMessage>, LoginMessageHandler>();
+      //services.AddSingleton<IMessageHandler<PurchaseMessage>, PurchaseMessageHandler>();
 
       // --> Add: Background services.
       services.AddHostedService<ProducerBackgroundService>(); // Demo purpose.
-      services.AddHostedService<ConsumingBackgroundService>();
+
+      // Message consumers in BackgroundService.
+      services.AddHostedService<ConsumerBackgroundService<LoginMessage>>();
+      services.AddHostedService<ConsumerBackgroundService<PurchaseMessage>>();
     }
 
     private static void configureAppConfiguration(HostBuilderContext hostContext, IConfigurationBuilder configBuilder)
-    {
-      configBuilder
-        .AddJsonFile("appsettings.json", true)
-        .AddEnvironmentVariables();
-    }
+      => configBuilder.AddJsonFile("appsettings.json", false);
 
     private static void configureLogger(HostBuilderContext hostContext, LoggerConfiguration configuration)
     {

@@ -1,13 +1,13 @@
 ﻿namespace PlayingWithRabbitMQ.Queue
 {
-  public interface IMessage
+  public interface IMessage<T> where T : class, new()
   {
-    string Data { get; }
+    string RawItem { get; }
 
     /// <summary>
     /// Deserialize the Data to the requested type of object.
     /// </summary>
-    T GetDataAs<T>() where T: class, new();
+    T Item { get; }
 
     /// <summary>
     /// Acknowledge the message.

@@ -1,39 +1,47 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Threading.Tasks.Dataflow;
-using PlayingWithRabbitMQ.Queue.Configuration;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
   public class BrokerFactory : IBrokerFactory
   {
-    private readonly ConcurrentDictionary<string, BufferBlock<object>> _queueDictionary;
+    private readonly ConcurrentDictionary<string, object> _queueDictionary;
 
     public BrokerFactory()
     {
-      _queueDictionary = new ConcurrentDictionary<string, BufferBlock<object>>();
+      _queueDictionary = new ConcurrentDictionary<string, object>();
     }
 
-    public IProducer CreateProducer(ProducerConfiguration configuration)
+    public IProducer<T> CreateProducer<T>() where T : class
     {
-      configuration.Validate();
+      BufferBlock<T> queue = getQueueFor<T>(out var queueName);
 
-      string key = $"{configuration.ExchangeName}_{configuration.RouteKey}";
-
-      BufferBlock<object> queue = _queueDictionary.GetOrAdd(key, new BufferBlock<object>());
-
-      return new Producer(queue.AsObserver());
+      return new Producer<T>(queue.AsObserver());
     }
 
-    public IConsumer CreateConsumer(ConsumerConfiguration configuration, Action<string> connectionShutdown = null)
+    public IConsumer<T> CreateConsumer<T>(Action<string> connectionShutdown = null) where T : class, new()
     {
-      configuration.Validate();
+      BufferBlock<T> queue = getQueueFor<T>(out var queueName);
 
-      string key = $"{configuration.ExchangeName}_{configuration.RouteKey}";
+      return new Consumer<T>(queue.AsObservable(), queueName);
+    }
 
-      BufferBlock<object> queue = _queueDictionary.GetOrAdd(key, new BufferBlock<object>());
+    private BufferBlock<T> getQueueFor<T>(out string queueName)
+    {
+      QueueMessageAttribute queueMessageAttr = typeof(T).GetCustomAttribute<QueueMessageAttribute>();
 
-      return new Consumer(queue.AsObservable(), configuration.QueueName);
+      if (queueMessageAttr is null)
+        throw new ArgumentNullException($"QueueMessageAttribute is not present in the {typeof(T).Name}.");
+
+      queueMessageAttr.Validate();
+
+      queueName = queueMessageAttr.QueueName;
+
+      string key = $"{queueMessageAttr.ExchangeName}_{queueMessageAttr.RouteKey}";
+
+      return _queueDictionary.GetOrAdd(key, new BufferBlock<T>()) as BufferBlock<T>;
     }
   }
 }

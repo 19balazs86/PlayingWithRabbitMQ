@@ -3,23 +3,21 @@ using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
-  public class Message : IMessage
+  public class Message<T> : IMessage<T> where T : class, new()
   {
-    private readonly object _message;
+    public string RawItem => JsonConvert.SerializeObject(Item);
 
-    public string Data => JsonConvert.SerializeObject(_message);
+    public T Item { get; private set; }
 
-    public Message(object message)
+    public Message(T message)
     {
-      _message = message;
+      Item = message;
     }
 
-    public T GetDataAs<T>() where T : class, new() => _message as T;
-
     public void Acknowledge()
-      => Log.Verbose($"InMemory - Acknowledge message({_message.GetType().Name}).");
+      => Log.Verbose($"InMemory - Acknowledge message({Item.GetType().Name}).");
 
     public void Reject(bool requeue = false)
-      => Log.Verbose($"InMemory - Reject message({_message.GetType().Name}) with requeue = {requeue}.");
+      => Log.Verbose($"InMemory - Reject message({Item.GetType().Name}) with requeue = {requeue}.");
   }
 }

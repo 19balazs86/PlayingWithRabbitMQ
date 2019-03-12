@@ -1,13 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using PlayingWithRabbitMQ.Queue.Configuration;
 
 namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
-  public interface IMessageHandler
+  public interface IMessageHandler<T> where T : class, new()
   {
-    ConsumerConfiguration ConsumerConfiguration { get; }
-
-    Task HandleMessageAsync(IMessage message, CancellationToken cancellationToken = default);
+    Task HandleMessageAsync(T message, CancellationToken cancellationToken = default);
   }
 }

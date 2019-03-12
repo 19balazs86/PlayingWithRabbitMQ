@@ -5,7 +5,7 @@ using RabbitMQ.Client.Events;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
-  public class Consumer : IConsumer
+  public class Consumer<T> : IConsumer<T> where T : class, new()
   {
     private readonly IConnection _connection;
     private readonly IModel _model;
@@ -16,13 +16,13 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
     public string QueueName { get; private set; }
 
-    public IObservable<IMessage> MessageSource { get; private set; }
+    public IObservable<IMessage<T>> MessageSource { get; private set; }
 
     public Consumer(
       IConnection connection,
       IModel model,
       string queueName,
-      ushort prefetchCount = 0,
+      ushort prefetchCount = 5,
       Action<string> connectionShutdown = null)
     {
       QueueName = queueName;
@@ -57,7 +57,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
           _consumer.Received -= handler;
         })
-        .Select(queueMessage => new Message(_model, queueMessage));
+        .Select(queueMessage => new Message<T>(_model, queueMessage));
     }
 
     public void Dispose()

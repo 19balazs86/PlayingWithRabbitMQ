@@ -1,35 +1,33 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using PlayingWithRabbitMQ.DemoElements.Messages;
 using PlayingWithRabbitMQ.Queue.BackgroundProcess;
-using PlayingWithRabbitMQ.Queue.Configuration;
 using Serilog;
 
 namespace PlayingWithRabbitMQ.DemoElements.MessageHandlers
 {
-  public class PurchaseMessageHandler : MessageHandlerBase<PurchaseMessage>
+  public class PurchaseMessageHandler : IMessageHandler<PurchaseMessage>
   {
     private static readonly Random _random = new Random();
+    private readonly DelaySettings _delaySettings;
 
-    public PurchaseMessageHandler(IConfiguration configuration) :
-      base(configuration.BindTo<ConsumerConfiguration>("Consumer:ShippingService"))
+    public PurchaseMessageHandler(DelaySettings delaySettings)
     {
-
+      _delaySettings = delaySettings;
     }
 
-    public override async Task HandleMessageAsync(PurchaseMessage message, CancellationToken cancellationToken = default)
+    public async Task HandleMessageAsync(PurchaseMessage message, CancellationToken cancellationToken = default)
     {
       Log.Debug($"{GetType().Name}: Message is processing. Id: '{message.Id}'.");
 
       // This method will be finished, even if the service is stopped.
 
       // Task #1: Without cancellationToken.
-      await Task.Delay(_random.Next(500, 1000));
+      await Task.Delay(_delaySettings.HandlerDelay);
 
       // Task #2: Without cancellationToken.
-      await Task.Delay(_random.Next(500, 1000));
+      await Task.Delay(_delaySettings.HandlerDelay);
 
       if (_random.NextDouble() <= 0.10)
         throw new Exception($"Just a random Exception from { GetType().Name }");

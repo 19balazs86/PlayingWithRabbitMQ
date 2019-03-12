@@ -1,5 +1,4 @@
 ﻿using System;
-using PlayingWithRabbitMQ.Queue.Configuration;
 
 namespace PlayingWithRabbitMQ.Queue
 {
@@ -8,11 +7,11 @@ namespace PlayingWithRabbitMQ.Queue
     /// <summary>
     /// Create a Producer to publish messages.
     /// </summary>
-    IProducer CreateProducer(ProducerConfiguration configuration);
+    IProducer<T> CreateProducer<T>() where T : class;
 
     /// <summary>
     /// Create a Consumer to consume messages.
     /// </summary>
-    IConsumer CreateConsumer(ConsumerConfiguration configuration, Action<string> connectionShutdown = null);
+    IConsumer<T> CreateConsumer<T>(Action<string> connectionShutdown = null) where T : class, new();
   }
 }

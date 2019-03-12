@@ -2,11 +2,11 @@
 
 namespace PlayingWithRabbitMQ.Queue
 {
-  public interface IProducer : IDisposable
+  public interface IProducer<T> : IDisposable where T : class
   {
     /// <summary>
     /// Publish a message.
     /// </summary>
-    void Publish(object message);
+    void Publish(T message);
   }
 }

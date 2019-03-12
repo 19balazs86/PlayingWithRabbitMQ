@@ -8,7 +8,7 @@ using RabbitMQ.Client.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
-  public class Producer : IProducer
+  public class Producer<T> : IProducer<T> where T : class
   {
     private readonly IConnection _connection;
     private readonly IModel _model;
@@ -64,13 +64,10 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ProducerException"></exception>
     /// <exception cref="ObjectDisposedException"></exception>
-    public void Publish(object message)
+    public void Publish(T message)
     {
-      if (message is null)
+      if (message == null)
         throw new ArgumentNullException(nameof(message));
-
-      if (message.GetType().IsValueType)
-        throw new ArgumentException("Message can not be value type.");
 
       string messageText = JsonConvert.SerializeObject(message);
 

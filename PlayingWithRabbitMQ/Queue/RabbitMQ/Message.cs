@@ -7,26 +7,22 @@ using RabbitMQ.Client.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
-  public class Message : IMessage
+  public class Message<T> : IMessage<T> where T : class, new()
   {
     private readonly IModel _model;
     private readonly BasicDeliverEventArgs _queueMessage;
+
+    public string RawItem => Encoding.UTF8.GetString(_queueMessage.Body);
+
+    /// <exception cref="JsonReaderException"></exception>
+    public T Item => JsonConvert.DeserializeObject<T>(RawItem);
 
     public Message(IModel model, BasicDeliverEventArgs queueMessage)
     {
       _model        = model;
       _queueMessage = queueMessage;
     }
-
-    public string Data => Encoding.UTF8.GetString(_queueMessage.Body);
-
-    /// <summary>
-    /// Deserialize the Data to the requested type of object.
-    /// </summary>
-    /// <exception cref="JsonReaderException"></exception>
-    public T GetDataAs<T>() where T : class, new()
-      => JsonConvert.DeserializeObject<T>(Data);
-
+    
     /// <summary>
     /// Acknowledge the message.
     /// </summary>

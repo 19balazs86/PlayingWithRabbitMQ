@@ -12,5 +12,8 @@ namespace PlayingWithRabbitMQ
 
       return bindingObject;
     }
+
+    public static T BindTo<T>(this IConfiguration configuration) where T : class, new()
+      => configuration.BindTo<T>(typeof(T).Name);
   }
 }

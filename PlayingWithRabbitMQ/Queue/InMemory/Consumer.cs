@@ -3,18 +3,16 @@ using System.Reactive.Linq;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
-  public class Consumer : IConsumer
+  public class Consumer<T> : IConsumer<T> where T : class, new()
   {
     public string QueueName { get; private set; }
 
-    public IObservable<IMessage> MessageSource { get; private set; }
+    public IObservable<IMessage<T>> MessageSource { get; private set; }
 
-    public Consumer(IObservable<object> sourceObservable, string queueName)
+    public Consumer(IObservable<T> sourceObservable, string queueName)
     {
-      MessageSource = sourceObservable?.Select(m => new Message(m))
-        ?? throw new ArgumentNullException(nameof(sourceObservable));
-
-      QueueName = queueName;
+      MessageSource = sourceObservable?.Select(m => new Message<T>(m));
+      QueueName     = queueName;
     }
 
     public void Dispose()

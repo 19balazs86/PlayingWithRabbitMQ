@@ -2,10 +2,10 @@
 
 namespace PlayingWithRabbitMQ.Queue
 {
-  public interface IConsumer : IDisposable
+  public interface IConsumer<T> : IDisposable where T : class, new()
   {
     string QueueName { get; }
 
-    IObservable<IMessage> MessageSource { get; }
+    IObservable<IMessage<T>> MessageSource { get; }
   }
 }

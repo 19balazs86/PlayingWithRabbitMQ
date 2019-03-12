@@ -1,10 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements.Messages;
 using PlayingWithRabbitMQ.Queue;
-using PlayingWithRabbitMQ.Queue.Configuration;
 
 namespace PlayingWithRabbitMQ.DemoElements
 {
@@ -14,29 +12,26 @@ namespace PlayingWithRabbitMQ.DemoElements
   public class ProducerBackgroundService : BackgroundService
   {
     private readonly IBrokerFactory _brokerFactory;
-    private readonly IConfiguration _configuration;
+    private readonly DelaySettings _delaySettings;
 
-    public ProducerBackgroundService(IBrokerFactory brokerFactory, IConfiguration configuration)
+    public ProducerBackgroundService(IBrokerFactory brokerFactory, DelaySettings delaySettings)
     {
       _brokerFactory = brokerFactory;
-      _configuration = configuration;
+      _delaySettings = delaySettings;
     }
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-      ProducerConfiguration orderServiceConfig = _configuration.BindTo<ProducerConfiguration>("Producer:OrderService");
-      ProducerConfiguration userServiceConfig  = _configuration.BindTo<ProducerConfiguration>("Producer:UserService");
-
       // In general, you do not need to keep the connection open.
-      using (IProducer orderProducer = _brokerFactory.CreateProducer(orderServiceConfig))
-      using (IProducer userProducer  = _brokerFactory.CreateProducer(userServiceConfig))
+      using (IProducer<PurchaseMessage> purchaseProducer = _brokerFactory.CreateProducer<PurchaseMessage>())
+      using (IProducer<LoginMessage> loginProducer       = _brokerFactory.CreateProducer<LoginMessage>())
       {
         while (!stoppingToken.IsCancellationRequested)
         {
-          orderProducer.Publish(new PurchaseMessage());
-          userProducer.Publish(new LoginMessage());
+          purchaseProducer.Publish(new PurchaseMessage());
+          loginProducer.Publish(new LoginMessage());
 
-          await Task.Delay(1000, stoppingToken);
+          await Task.Delay(_delaySettings.ProducerDelay, stoppingToken);
         }
       }
     }

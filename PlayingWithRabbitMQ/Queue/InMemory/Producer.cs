@@ -2,21 +2,17 @@
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
-  public class Producer : IProducer
+  public class Producer<T> : IProducer<T> where T : class
   {
-    private readonly IObserver<object> _observer;
+    private readonly IObserver<T> _observer;
 
-    public Producer(IObserver<object> observer)
+    public Producer(IObserver<T> observer)
     {
       _observer = observer ?? throw new ArgumentNullException(nameof(observer));
     }
 
-    public void Publish(object message)
-      => _observer.OnNext(message);
+    public void Publish(T message) => _observer.OnNext(message);
 
-    public void Dispose()
-    {
-      // Do nothing.
-    }
+    public void Dispose() => _observer.OnCompleted();
   }
 }

@@ -19,87 +19,94 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 - The in-memory queue is built on BufferBlock ([System.Threading.Tasks.Dataflow](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.dataflow?view=netcore-2.2 "System.Threading.Tasks.Dataflow")).
 - Some links about the TPL Dataflow topic in my [PlayingWithObserver](https://github.com/19balazs86/PlayingWithObserver "PlayingWithObserver") repository.
 
+#### QueueMessageAttribute
+- This attribute sits on top of your message class.
+- The properties describe the path of the message from exchange to queue.
+- This kind of configuration needs to create Producer and Consumer.
+
+```csharp
+class QueueMessageAttribute : Attribute
+{
+    // Message be published into this exchange.
+    string ExchangeName
+
+    // Values: direct, fanout, topic.
+    string ExchangeType
+
+    // If exchangeType is direct or topic, you have to provide the RouteKey.
+    string RouteKey
+
+    // Queue name which you want to consume.
+    string QueueName
+
+    // Dead letter queue for rejected messages.
+    string DeadLetterQueue
+
+    // This tells RabbitMQ not to give more than x message to a worker at a time.
+    ushort PrefetchCount
+}
+```
+
 #### BrokerFactory
-- With the proper configuration you can create **Producer** (publish messages) and **Consumer** (consume messages).
+- With the proper configuration from the QueueMessageAttribute you can create **Producer** (publish messages) and **Consumer** (receive messages).
 
 ```csharp
 public interface IBrokerFactory
 {
-    IProducer CreateProducer(ProducerConfiguration configuration);
-    IConsumer CreateConsumer(ConsumerConfiguration configuration);
+    IProducer<T> CreateProducer();
+    IConsumer<T> CreateConsumer();
 }
 ```
 
 #### Producer and Consumer
-- When you create a Producer, the framework automatically creates the exchange according to the given configuration.
-- When you create a Consumer, the framework automatically creates the queue and make the binding with the exchange according to the configuration.
+- When you create a Producer, the framework automatically creates the exchange.
+- When you create a Consumer, the framework automatically creates the queue and make the binding with the exchange.
 - No need to create any exchange, queue or binding manually.
 
-#### ConsumingBackgroundService
-- This service is responsible to run Consumers in the background in order to consume messages and handle those with the **IMessageHandler**.
+#### IMessageHandler< T >
+- Your message handler implement this interface.
 
 ```csharp
-public class ConsumingBackgroundService : BackgroundService
+public interface IMessageHandler<T>
 {
-    public ConsumingBackgroundService(IBrokerFactory ..., IEnumerable<IMessageHandler> ...)
+    Task HandleMessageAsync(T message, CancellationToken cancellationToken);
+}
+```
+
+#### ConsumerBackgroundService
+- This service is responsible to run a Consumer in the background in order to receive messages and handle those with the **IMessageHandler< T >**.
+
+```csharp
+public class ConsumerBackgroundService<T> : BackgroundService
+{
+    public ConsumerBackgroundService(IBrokerFactory ..., IMessageHandler<T> ...)
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Creates Consumers according to the given configuration from the IMessageHandler.
-        // Start consuming messages.
+        // Create Consumer and start consuming messages.
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        // Waiting for the handlers to finish the process.
-        // Dispose all consumers to close the connections.
+        // Waiting for the handler to finish the process.
+        // Dispose the consumer to close the connection.
     }
 
-    private async void handleMessage(IMessageHandler handler, IMessage msg, CancellationToken)
+    private void handleMessage(IMessage<T> message, CancellationToken stoppingToken)
     {
-        // Handle the message via calling the handler.HandleMessageAsync(msg).
+        // Handle the message calling the given handler.
+        // Acknowledge or reject the message.
+        // Handle exceptions.
     }
 }
 ```
 
-#### IMessageHandler
+#### Example for message handler
+- All you need to create custom message handlers for your own business purpose.
 
 ```csharp
-public interface IMessageHandler
+public class LoginMessageHandler : IMessageHandler<LoginMessage>
 {
-    ConsumerConfiguration ConsumerConfiguration { get; }
-    Task HandleMessageAsync(IMessage message, CancellationToken ct);
-}
-```
-
-#### MessageHandlerBase
-- Abstract implementation for IMessageHandler.
-
-```csharp
-public abstract class MessageHandlerBase<TMessage> : IMessageHandler
-{
-    // ...
-    public abstract Task HandleMessageAsync(TMessage message, CancellationToken ct);
-
-    public async Task HandleMessageAsync(IMessage message, CancellationToken ct)
-    {
-        // 1. Deserialize the message.
-        // 2. Call the typed HandleMessageAsync method.
-        // 3. Acknowledge or reject the message.
-        // 4. Handle exceptions.
-    }
-}
-```
-
-#### Consuming queue and handle messages
-- All you need to create custom message handlers for your own business purpose using the MessageHandlerBase as a base class.
-
-```csharp
-public class LoginMessageHandler : MessageHandlerBase<LoginMessage>
-{
-    public LoginMessageHandler(IConfiguration configuration) :
-        base(configuration.BindTo<ConsumerConfiguration>("ConsumerX")) { }
-
     public override async Task HandleMessageAsync(LoginMessage msg, CancellationToken)
     {
         // Your business logic.
@@ -116,22 +123,24 @@ public class LoginMessageHandler : MessageHandlerBase<LoginMessage>
 ```csharp
 private void configureServices(HostBuilderContext hostContext, IServiceCollection services)
 {
-    // ...
+    // --> Add: BrokerFactory depending on the environment.
+    // But in general the following
     services.AddSingleton(brokerFactoryConfiguration);
     services.AddSingleton<IBrokerFactory, BrokerFactory>();
-
-    services.AddSingleton(configuration);
 
     // --> Add: Message handlers with Scrutor.
     services.Scan(scan => scan
         .FromEntryAssembly()
-            .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
-            .As<IMessageHandler>()
+            .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))ó
+            .AsImplementedInterfaces()
             .WithSingletonLifetime());
 
     // --> Add: Background services.
     services.AddHostedService<ProducerBackgroundService>(); // Demo purpose.
-    services.AddHostedService<ConsumingBackgroundService>();
+
+    // Message consumers in BackgroundService.
+    services.AddHostedService<ConsumerBackgroundService<LoginMessage>>();
+    services.AddHostedService<ConsumerBackgroundService<PurchaseMessage>>();
 }
 ```
 #### GenericHost
@@ -146,6 +155,7 @@ private void configureServices(HostBuilderContext hostContext, IServiceCollectio
 public static async Task Main(string[] args)
 {
     IHostBuilder hostBuilder = new HostBuilder()
+        .UseEnvironment(args.Contains("--prod") ? Production : Development)
         .ConfigureAppConfiguration(configureAppConfiguration)
         .ConfigureServices(configureServices)
         .UseSerilog(configureLogger);
