@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks.Dataflow;
 
@@ -16,19 +19,19 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
 
     public IProducer<T> CreateProducer<T>() where T : class
     {
-      BufferBlock<T> queue = getQueueFor<T>(out var queueName);
+      Subject<T> queue = getQueueFor<T>(out var queueName);
 
       return new Producer<T>(queue.AsObserver());
     }
 
     public IConsumer<T> CreateConsumer<T>(Action<string> connectionShutdown = null) where T : class, new()
     {
-      BufferBlock<T> queue = getQueueFor<T>(out var queueName);
+      Subject<T> queue = getQueueFor<T>(out var queueName);
 
       return new Consumer<T>(queue.AsObservable(), queueName);
     }
 
-    private BufferBlock<T> getQueueFor<T>(out string queueName)
+    private Subject<T> getQueueFor<T>(out string queueName)
     {
       QueueMessageAttribute queueMessageAttr = typeof(T).GetCustomAttribute<QueueMessageAttribute>();
 
@@ -41,7 +44,9 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
 
       string key = $"{queueMessageAttr.ExchangeName}_{queueMessageAttr.RouteKey}";
 
-      return _queueDictionary.GetOrAdd(key, new BufferBlock<T>()) as BufferBlock<T>;
+      // You can use BufferBlock, if that is suitable for you.
+      // Just for test purpose the Subject can be enough.
+      return _queueDictionary.GetOrAdd(key, new Subject<T>()) as Subject<T>;
     }
   }
 }
