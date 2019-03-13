@@ -151,14 +151,20 @@ private void configureServices(HostBuilderContext hostContext, IServiceCollectio
 - The example has Producers and Consumers working in the background.
 
 ```csharp
-public static async Task Main(string[] args)
+public static async Task<int> Main(string[] args)
 {
-    IHostBuilder hostBuilder = new HostBuilder()
-        .UseEnvironment(args.Contains("--prod") ? Production : Development)
-        .ConfigureAppConfiguration(configureAppConfiguration)
-        .ConfigureServices(configureServices)
-        .UseSerilog(configureLogger);
+    try
+    {
+        IHostBuilder hostBuilder = new HostBuilder()
+            .UseEnvironment(args.Contains("--prod") ? Production : Development)
+            .ConfigureAppConfiguration(configureAppConfiguration)
+            .ConfigureServices(configureServices)
+            .UseSerilog(configureLogger);
 
-    await hostBuilder.RunConsoleAsync();
+        await hostBuilder.RunConsoleAsync();
+
+        return 0;
+    }
+    catch (Exception ex) { ... }
 }
 ```

@@ -15,15 +15,26 @@ namespace PlayingWithRabbitMQ
 {
   public class Program
   {
-    public static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-      IHostBuilder hostBuilder = new HostBuilder()
-        .UseEnvironment(args.Contains("--prod") ? EnvironmentName.Production : EnvironmentName.Development)
-        .ConfigureAppConfiguration(configureAppConfiguration)
-        .ConfigureServices(configureServices)
-        .UseSerilog(configureLogger);
+      try
+      {
+        IHostBuilder hostBuilder = new HostBuilder()
+          .UseEnvironment(args.Contains("--prod") ? EnvironmentName.Production : EnvironmentName.Development)
+          .ConfigureAppConfiguration(configureAppConfiguration)
+          .ConfigureServices(configureServices)
+          .UseSerilog(configureLogger);
 
-      await hostBuilder.RunConsoleAsync();
+        await hostBuilder.RunConsoleAsync();
+
+        return 0;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"An exception occurred starting the Host. Message: '{ex.Message}'");
+
+        return -1;
+      }
     }
 
     private static void configureServices(HostBuilderContext hostContext, IServiceCollection services)
