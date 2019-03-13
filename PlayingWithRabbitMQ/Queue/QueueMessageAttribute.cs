@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Linq;
 
 namespace PlayingWithRabbitMQ.Queue
 {
+  public enum ExchangeType { Direct, Fanout, Topic }
+
   [AttributeUsage(AttributeTargets.Class)]
   public class QueueMessageAttribute : Attribute
   {
-    private static readonly string[] _exchangeTypes = new [] { "direct", "fanout", "topic" };
-
     #region Properties
     /// <summary>
     /// Message be published into this exchange.
@@ -15,9 +14,9 @@ namespace PlayingWithRabbitMQ.Queue
     public string ExchangeName { get; private set; }
 
     /// <summary>
-    /// Values: direct, fanout, topic.
+    /// Values: Direct, Fanout, Topic.
     /// </summary>
-    public string ExchangeType { get; private set; }
+    public ExchangeType ExchangeType { get; private set; }
 
     /// <summary>
     /// If exchangeType is direct or topic, you have to provide the RouteKey.
@@ -42,14 +41,14 @@ namespace PlayingWithRabbitMQ.Queue
 
     public QueueMessageAttribute(
       string exchangeName,
-      string exchangeType,
+      ExchangeType exchangeType,
       string routeKey,
       string queueName,
       string deadLetterQueue = null,
       ushort prefetchCount   = 5)
     {
       ExchangeName    = exchangeName;
-      ExchangeType    = exchangeType?.ToLower();
+      ExchangeType    = exchangeType;
       RouteKey        = routeKey;
       QueueName       = queueName;
       DeadLetterQueue = deadLetterQueue;
@@ -61,13 +60,7 @@ namespace PlayingWithRabbitMQ.Queue
       if (string.IsNullOrWhiteSpace(ExchangeName))
         throw new ArgumentException($"{nameof(ExchangeName)} is missing.");
 
-      if (string.IsNullOrWhiteSpace(ExchangeType))
-        throw new ArgumentException($"{nameof(ExchangeType)} is missing.");
-
-      if (!_exchangeTypes.Contains(ExchangeType))
-        throw new ArgumentException($"{nameof(ExchangeType)} is wrong.");
-
-      if (ExchangeType != "fanout" && string.IsNullOrWhiteSpace(RouteKey))
+      if (ExchangeType != ExchangeType.Fanout && string.IsNullOrWhiteSpace(RouteKey))
         throw new ArgumentException($"{nameof(RouteKey)} is missing.");
 
       if (string.IsNullOrWhiteSpace(QueueName))

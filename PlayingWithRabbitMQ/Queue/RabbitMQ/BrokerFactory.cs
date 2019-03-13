@@ -66,7 +66,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         IModel model           = connection.CreateModel();
         
         // Create the requested exchange.
-        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType, true);
+        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType.ToString().ToLower(), true);
         model.ConfirmSelect();
 
         // --> Create: Producer.
@@ -117,7 +117,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         model.QueueDeclare(queueMessageAttr.QueueName, true, false, false, declareArguments);
 
         // Create: Exchange and bind it with the queue.
-        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType, true);
+        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType.ToString().ToLower(), true);
         model.QueueBind(queueMessageAttr.QueueName, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey ?? string.Empty);
 
         // --> Create: Consumer.

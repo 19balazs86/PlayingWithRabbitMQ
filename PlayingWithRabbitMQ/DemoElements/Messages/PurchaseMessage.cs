@@ -6,7 +6,7 @@ namespace PlayingWithRabbitMQ.DemoElements.Messages
   // The purchase message coming from the order service. The shipping service consume it.
   [QueueMessage(
     exchangeName: "service.order",
-    exchangeType: "direct",
+    exchangeType: ExchangeType.Direct,
     routeKey: "purchase",
     queueName: "order.purchase.shipping",
     deadLetterQueue: "order.purchase.shipping.sink")]

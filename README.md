@@ -29,8 +29,8 @@ class QueueMessageAttribute : Attribute
     // Message be published into this exchange.
     string ExchangeName
 
-    // Values: direct, fanout, topic.
-    string ExchangeType
+    // Values: Direct, Fanout, Topic.
+    ExchangeType ExchangeType
 
     // If exchangeType is direct or topic, you have to provide the RouteKey.
     string RouteKey

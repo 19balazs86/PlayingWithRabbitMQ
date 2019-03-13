@@ -6,7 +6,7 @@ namespace PlayingWithRabbitMQ.DemoElements.Messages
   // The login message coming from the user service. The statistics service consume it.
   [QueueMessage(
     exchangeName: "service.user",
-    exchangeType: "direct",
+    exchangeType: ExchangeType.Direct,
     routeKey: "login",
     queueName: "user.login.statistics",
     deadLetterQueue: "user.login.statistics.sink")]
