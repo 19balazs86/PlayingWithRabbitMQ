@@ -106,7 +106,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
       Interlocked.Decrement(ref _handlerCounter);
     }
 
-    private static void connectionShutdown(string queueName)
-      => Log.Error($"Connection is lost with the queue: '{queueName}'.");
+    private static void connectionShutdown()
+      => Log.Error($"Connection is lost with the {typeof(T).Name} Consumer.");
   }
 }

@@ -24,11 +24,11 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
       return new Producer<T>(queue.AsObserver());
     }
 
-    public IConsumer<T> CreateConsumer<T>(Action<string> connectionShutdown = null) where T : class, new()
+    public IConsumer<T> CreateConsumer<T>(Action connectionShutdown = null) where T : class, new()
     {
       Subject<T> queue = getQueueFor<T>(out var queueName);
 
-      return new Consumer<T>(queue.AsObservable(), queueName);
+      return new Consumer<T>(queue.AsObservable());
     }
 
     private Subject<T> getQueueFor<T>(out string queueName)

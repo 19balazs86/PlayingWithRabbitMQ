@@ -10,11 +10,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     private readonly IConnection _connection;
     private readonly IModel _model;
 
-    private readonly Action<string> _connectionShutdown;
+    private readonly Action _connectionShutdown;
 
     private readonly EventingBasicConsumer _consumer;
-
-    public string QueueName { get; private set; }
 
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 
@@ -23,10 +21,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       IModel model,
       string queueName,
       ushort prefetchCount = 5,
-      Action<string> connectionShutdown = null)
+      Action connectionShutdown = null)
     {
-      QueueName = queueName;
-
       _connection = connection;
       _model      = model;
 
@@ -47,7 +43,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
           _consumer.Received += handler;
 
           if (!_consumer.IsRunning)
-            _model.BasicConsume(queue: QueueName, autoAck: false, consumer: _consumer);
+            _model.BasicConsume(queue: queueName, autoAck: false, consumer: _consumer);
         },
         // Remove handler / observer.
         handler =>
@@ -69,6 +65,6 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     }
 
     private void connectionShutdownHandler(object sender, ShutdownEventArgs e)
-      => _connectionShutdown?.Invoke(QueueName);
+      => _connectionShutdown?.Invoke();
   }
 }
