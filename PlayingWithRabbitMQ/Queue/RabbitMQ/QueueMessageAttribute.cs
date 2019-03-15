@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PlayingWithRabbitMQ.Queue
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public enum ExchangeType { Direct, Fanout, Topic }
 

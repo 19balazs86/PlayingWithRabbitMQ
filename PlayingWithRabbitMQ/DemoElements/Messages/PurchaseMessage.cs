@@ -1,5 +1,5 @@
 ﻿using System;
-using PlayingWithRabbitMQ.Queue;
+using PlayingWithRabbitMQ.Queue.RabbitMQ;
 
 namespace PlayingWithRabbitMQ.DemoElements.Messages
 {
