@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -15,7 +14,7 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
     public IProducer<T> CreateProducer<T>() where T : class
       => new Producer<T>(getQueueFor<T>().AsObserver());
 
-    public IConsumer<T> CreateConsumer<T>(Action connectionShutdown = null) where T : class, new()
+    public IConsumer<T> CreateConsumer<T>() where T : class, new()
       => new Consumer<T>(getQueueFor<T>().AsObservable());
 
     private Subject<T> getQueueFor<T>()

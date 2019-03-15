@@ -26,7 +26,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
       try
       {
         // --> Create: Consumer. 
-        _consumer = _brokerFactory.CreateConsumer<T>(connectionShutdown);
+        _consumer = _brokerFactory.CreateConsumer<T>();
 
         Log.Information($"Start consuming messages(type: {typeof(T).Name}).");
 
@@ -105,8 +105,5 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
       Interlocked.Decrement(ref _handlerCounter);
     }
-
-    private static void connectionShutdown()
-      => Log.Error($"Connection is lost with the {typeof(T).Name} Consumer.");
   }
 }

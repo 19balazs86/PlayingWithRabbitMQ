@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
@@ -10,27 +11,20 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     private readonly IConnection _connection;
     private readonly IModel _model;
 
-    private readonly Action _connectionShutdown;
-
-    private readonly EventingBasicConsumer _consumer;
-
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 
     public Consumer(
       IConnection connection,
       IModel model,
       string queueName,
-      ushort prefetchCount = 5,
-      Action connectionShutdown = null)
+      ushort prefetchCount = 5)
     {
       _connection = connection;
       _model      = model;
 
-      _connectionShutdown = connectionShutdown;
-
       _model.BasicQos(0, prefetchCount, false);
 
-      _consumer = new EventingBasicConsumer(_model);
+      var consumer = new EventingBasicConsumer(_model);
 
       _connection.ConnectionShutdown += connectionShutdownHandler;
 
@@ -40,18 +34,18 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // Add handler / observer.
         handler =>
         {
-          _consumer.Received += handler;
+          consumer.Received += handler;
 
-          if (!_consumer.IsRunning)
-            _model.BasicConsume(queue: queueName, autoAck: false, consumer: _consumer);
+          if (!consumer.IsRunning)
+            _model.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
         },
         // Remove handler / observer.
         handler =>
         {
-          if (_consumer.IsRunning)
-            _consumer.OnCancel();
+          if (consumer.IsRunning)
+            consumer.OnCancel();
 
-          _consumer.Received -= handler;
+          consumer.Received -= handler;
         })
         .Select(queueMessage => new Message<T>(_model, queueMessage));
     }
@@ -65,6 +59,6 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     }
 
     private void connectionShutdownHandler(object sender, ShutdownEventArgs e)
-      => _connectionShutdown?.Invoke();
+      => Log.Error($"Connection is lost with the {typeof(T).Name} Consumer.");
   }
 }
