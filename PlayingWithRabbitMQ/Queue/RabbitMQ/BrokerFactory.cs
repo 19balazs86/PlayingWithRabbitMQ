@@ -103,7 +103,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
         model.QueueDeclare(deadLetterQueue, true, false, false);
 
-        model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, "direct", true);
+        model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true);
 
         model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, queueMessageAttr.QueueName);
 
