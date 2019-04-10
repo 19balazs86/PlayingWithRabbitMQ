@@ -13,15 +13,20 @@ In order to put it into play, you need a RabbitMQ server. Install it locally: [W
 
 There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
 
+##### Worth to mention Michael series about the built-in job queues
+- [Part 1](https://michaelscodingspot.com/c-job-queues/ "Part 1") - Implementations in Depth.
+- [Part 2](https://michaelscodingspot.com/c-job-queues-with-reactive-extensions-and-channels/ "Part 2") - Reactive Extensions and Channels.
+- [Part 3](https://michaelscodingspot.com/c-job-queues-part-3-with-tpl-dataflow-and-failure-handling/ "Part 3") - TPL Dataflow and Failure Handling.
+
 ### Components
 #### In-memory solution for test
 - By default the application running in development mode and using an in-memory solution.
-- This is enough for test purpose to follow the message from the Producer to the Consumer and handler.
+- This solution is good for test purpose in order to follow the message from the Producer to the Consumer and handle it.
 
 #### QueueMessageAttribute
 - This attribute sits on top of your message class.
 - The properties describe the path of the message from exchange to queue.
-- This kind of configuration needs to create Producer and Consumer.
+- This kind of configuration, which needs to create Producer and Consumer.
 
 ```csharp
 class QueueMessageAttribute : Attribute
@@ -47,7 +52,7 @@ class QueueMessageAttribute : Attribute
 ```
 
 #### BrokerFactory
-- With the proper configuration from the QueueMessageAttribute you can create **Producer** (publish messages) and **Consumer** (receive messages).
+- With the proper configuration of QueueMessageAttribute, you can create **Producer** (publish messages) and **Consumer** (receive messages).
 
 ```csharp
 public interface IBrokerFactory
@@ -91,9 +96,9 @@ public class ConsumerBackgroundService<T> : BackgroundService
         // Dispose the consumer to close the connection.
     }
 
-    private void handleMessage(IMessage<T> message, CancellationToken stoppingToken)
+    private async Task handleMessage(IMessage<T> message)
     {
-        // Handle the message calling the given handler.
+        // Handle the message via calling the proper handler.
         // Acknowledge or reject the message.
         // Handle exceptions.
     }
