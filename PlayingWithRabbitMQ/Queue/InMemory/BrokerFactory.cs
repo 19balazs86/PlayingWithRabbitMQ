@@ -13,6 +13,8 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
       => new Producer<T>(_subject.AsObserver<T>());
 
     public IConsumer<T> CreateConsumer<T>() where T : class, new()
-      => new Consumer<T>(_subject.OfType<T>().AsObservable());
+      => new Consumer<T>(_subject.OfType<T>());
+
+    public void Dispose() => _subject.Dispose();
   }
 }

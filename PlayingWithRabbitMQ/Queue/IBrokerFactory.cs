@@ -1,6 +1,8 @@
-﻿namespace PlayingWithRabbitMQ.Queue
+﻿using System;
+
+namespace PlayingWithRabbitMQ.Queue
 {
-  public interface IBrokerFactory
+  public interface IBrokerFactory : IDisposable
   {
     /// <summary>
     /// Create a Producer to publish messages.

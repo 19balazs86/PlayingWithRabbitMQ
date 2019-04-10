@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
+using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
@@ -12,6 +14,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     private readonly BrokerFactoryConfiguration _factoryConfiguration;
 
     private readonly IConnectionFactory _connectionFactory;
+
+    private readonly Lazy<IConnection> _lazyConnection;
 
     /// <summary>
     /// BrokerFactory constructor.
@@ -46,6 +50,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       }
 
       _factoryConfiguration = configuration;
+
+      _lazyConnection = new Lazy<IConnection>(createConnection);
     }
 
     /// <summary>
@@ -61,16 +67,15 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
       try
       {
-        // --> Create: Connection + Model.
-        IConnection connection = _connectionFactory.CreateConnection();
-        IModel model           = connection.CreateModel();
+        // --> Create: Model.
+        IModel model = _lazyConnection.Value.CreateModel();
         
         // Create the requested exchange.
         model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType.ToString().ToLower(), true);
         model.ConfirmSelect();
 
         // --> Create: Producer.
-        return new Producer<T>(connection, model, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey);
+        return new Producer<T>(model, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey);
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
@@ -91,9 +96,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
       try
       {
-        // --> Create: Connection + Model.
-        IConnection connection = _connectionFactory.CreateConnection();
-        IModel model           = connection.CreateModel();
+        // --> Create: Model.
+        IModel model = _lazyConnection.Value.CreateModel();
 
         // --> Initialize: DeadLetterQueue and DeadLetterExchange.
         string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
@@ -121,12 +125,18 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         model.QueueBind(queueMessageAttr.QueueName, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey ?? string.Empty);
 
         // --> Create: Consumer.
-        return new Consumer<T>(connection, model, queueMessageAttr.QueueName, queueMessageAttr.PrefetchCount);
+        return new Consumer<T>(model, queueMessageAttr.QueueName, queueMessageAttr.PrefetchCount);
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
         throw new QueueFactoryException("Failed to create Consumer.", ex);
       }
+    }
+
+    public void Dispose()
+    {
+      if (_lazyConnection.IsValueCreated)
+        _lazyConnection.Value.Dispose();
     }
 
     /// <exception cref="ArgumentNullException"></exception>
@@ -142,6 +152,23 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       queueMessageAttr.Validate();
 
       return queueMessageAttr;
+    }
+
+    private IConnection createConnection()
+    {
+      IConnection connection = _connectionFactory.CreateConnection();
+
+      // --> Event handlers.
+      connection.ConnectionShutdown += (object sender, ShutdownEventArgs e)
+        => Log.Error("RabbitMQ connection is lost.");
+
+      connection.ConnectionRecoveryError += (object sender, ConnectionRecoveryErrorEventArgs e)
+        => Log.Error(e.Exception, "RabbitMQ connection recovery error.");
+
+      connection.RecoverySucceeded += (object sender, EventArgs e)
+        => Log.Information("RabbitMQ connection recovery succeeded.");
+
+      return connection;
     }
   }
 }

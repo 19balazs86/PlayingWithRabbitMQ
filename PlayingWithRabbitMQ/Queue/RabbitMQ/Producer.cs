@@ -10,17 +10,13 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public class Producer<T> : IProducer<T> where T : class
   {
-    private readonly IConnection _connection;
     private readonly IModel _model;
 
     private readonly string _exchangeName;
     private readonly string _routingKey;
 
-    private bool _isDisposed = false;
-
-    public Producer(IConnection connection, IModel model, string exchangeName, string routingKey)
-    {
-      _connection   = connection;      
+    public Producer(IModel model, string exchangeName, string routingKey)
+    {    
       _model        = model;      
       _exchangeName = exchangeName;
       _routingKey   = routingKey;
@@ -34,7 +30,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ObjectDisposedException"></exception>
     private void publish(byte[] message)
     {
-      if (_isDisposed)
+      if (_model.IsClosed)
         throw new ObjectDisposedException("Producer is already disposed.");
 
       if (message is null || message.Length == 0)
@@ -74,12 +70,6 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       publish(Encoding.UTF8.GetBytes(messageText));
     }
 
-    public void Dispose()
-    {
-      _isDisposed = true;
-
-      if (_model.IsOpen) _model.Close();
-      if (_connection.IsOpen) _connection.Close();
-    }
+    public void Dispose() => _model.Dispose();
   }
 }
