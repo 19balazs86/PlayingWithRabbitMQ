@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using Serilog;
@@ -12,26 +13,36 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
     private readonly IBrokerFactory _brokerFactory;
     private readonly IMessageHandler<T> _messageHandler;
 
+    private readonly ActionBlock<IMessage<T>> _actionBlock;
+
     private IConsumer<T> _consumer;
-    private int _handlerCounter = 0;
+
+    private CancellationToken _stoppingToken;
 
     public ConsumerBackgroundService(IBrokerFactory brokerFactory, IMessageHandler<T> messageHandler)
     {
       _brokerFactory  = brokerFactory;
       _messageHandler = messageHandler;
+
+      // Set the MaxDegreeOfParallelism value.
+      var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
+      _actionBlock = new ActionBlock<IMessage<T>>(handleMessage, options);
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
+      _stoppingToken = stoppingToken;
+
       try
       {
-        // --> Create: Consumer. 
+        // --> Create: Consumer.
         _consumer = _brokerFactory.CreateConsumer<T>();
 
         Log.Information($"Start consuming messages(type: {typeof(T).Name}).");
 
         // --> Start consuming messages. 
-        _consumer.MessageSource.Subscribe(message => handleMessage(message, stoppingToken), stoppingToken);
+        _consumer.MessageSource.Subscribe(message => _actionBlock.Post(message), stoppingToken);
       }
       catch (Exception ex)
       {
@@ -47,23 +58,25 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
       Log.Information($"Stop consuming {typeof(T).Name}.");
 
+      // Complete the ActionBlock.
+      _actionBlock.Complete();
+
       // Waiting for the handlers to finish the process.
-      while (Interlocked.CompareExchange(ref _handlerCounter, 0, 0) > 0)
-        await Task.Delay(100);
+      await _actionBlock.Completion;
 
       // Dispose consumer to close the connections.
       _consumer?.Dispose();
     }
 
-    private async void handleMessage(IMessage<T> message, CancellationToken stoppingToken)
+    private async Task handleMessage(IMessage<T> message)
     {
-      Interlocked.Increment(ref _handlerCounter);
+      if (_stoppingToken.IsCancellationRequested) return;
 
       bool? isRequeue = null;
 
       try
       {
-        await _messageHandler.HandleMessageAsync(message.Item, stoppingToken);
+        await _messageHandler.HandleMessageAsync(message.Item, _stoppingToken);
 
         message.Acknowledge();
 
@@ -102,8 +115,6 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
           Log.Error(ex, $"Failed to reject the {typeof(T).Name}.");
         }
       }
-
-      Interlocked.Decrement(ref _handlerCounter);
     }
   }
 }
