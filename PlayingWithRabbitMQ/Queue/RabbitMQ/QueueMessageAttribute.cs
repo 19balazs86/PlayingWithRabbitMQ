@@ -4,6 +4,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public enum ExchangeType { Direct, Fanout, Topic }
 
+  public enum DeliveryMode { NonPersistent = 1, Persistent = 2 }
+
   [AttributeUsage(AttributeTargets.Class)]
   public class QueueMessageAttribute : Attribute
   {
@@ -37,6 +39,12 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// This tells RabbitMQ not to give more than x message to a worker at a time. Bigger number means more threads.
     /// </summary>
     public ushort PrefetchCount { get; private set; }
+
+    /// <summary>
+    /// Publish the message as Persistent or NonPersistent.
+    /// Messages sent as Persistent that are delivered to 'durable' queues will be logged to disk.
+    /// </summary>
+    public DeliveryMode DeliveryMode { get; private set; }
     #endregion
 
     public QueueMessageAttribute(
@@ -44,8 +52,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       ExchangeType exchangeType,
       string routeKey,
       string queueName,
-      string deadLetterQueue = null,
-      ushort prefetchCount   = 5)
+      string deadLetterQueue    = null,
+      ushort prefetchCount      = 5,
+      DeliveryMode deliveryMode = DeliveryMode.Persistent)
     {
       ExchangeName    = exchangeName;
       ExchangeType    = exchangeType;
@@ -53,6 +62,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       QueueName       = queueName;
       DeadLetterQueue = deadLetterQueue;
       PrefetchCount   = prefetchCount;
+      DeliveryMode    = deliveryMode;
     }
 
     public void Validate()

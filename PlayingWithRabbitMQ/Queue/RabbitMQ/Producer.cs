@@ -14,12 +14,14 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
     private readonly string _exchangeName;
     private readonly string _routingKey;
+    private readonly DeliveryMode _deliveryMode;
 
-    public Producer(IModel model, string exchangeName, string routingKey)
+    public Producer(IModel model, string exchangeName, string routingKey, DeliveryMode deliveryMode)
     {    
       _model        = model;      
       _exchangeName = exchangeName;
       _routingKey   = routingKey;
+      _deliveryMode = deliveryMode;
     }
 
     /// <summary>
@@ -40,7 +42,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
       props.ContentType     = MediaTypeNames.Application.Json;
       props.ContentEncoding = Encoding.UTF8.WebName;
-      props.DeliveryMode    = 2; // Messages marked as 'persistent' that are delivered to 'durable' queues will be logged to disk.
+      props.DeliveryMode    = (byte)_deliveryMode;
 
       _model.BasicPublish(_exchangeName, _routingKey, props, message);
 

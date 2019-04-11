@@ -58,13 +58,12 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
       Log.Information($"Stop consuming {typeof(T).Name}.");
 
-      // Complete the ActionBlock.
       _actionBlock.Complete();
 
       // Waiting for the handlers to finish the process.
       await _actionBlock.Completion;
 
-      // Dispose consumer to close the connections.
+      // Dispose consumer to close the connection.
       _consumer?.Dispose();
     }
 

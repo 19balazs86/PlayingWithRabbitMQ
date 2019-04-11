@@ -63,7 +63,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public IProducer<T> CreateProducer<T>() where T : class
     {
-      QueueMessageAttribute queueMessageAttr = getAndValidateAttributeFor<T>();
+      QueueMessageAttribute messageAttr = getAndValidateAttributeFor<T>();
 
       try
       {
@@ -71,11 +71,11 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         IModel model = _lazyConnection.Value.CreateModel();
         
         // Create the requested exchange.
-        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType.ToString().ToLower(), true);
+        model.ExchangeDeclare(messageAttr.ExchangeName, messageAttr.ExchangeType.ToString().ToLower(), true);
         model.ConfirmSelect();
 
         // --> Create: Producer.
-        return new Producer<T>(model, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey);
+        return new Producer<T>(model, messageAttr.ExchangeName, messageAttr.RouteKey, messageAttr.DeliveryMode);
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
@@ -92,7 +92,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public IConsumer<T> CreateConsumer<T>() where T : class, new()
     {
-      QueueMessageAttribute queueMessageAttr = getAndValidateAttributeFor<T>();
+      QueueMessageAttribute messageAttr = getAndValidateAttributeFor<T>();
 
       try
       {
@@ -102,30 +102,30 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // --> Initialize: DeadLetterQueue and DeadLetterExchange.
         string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
 
-        if (!string.IsNullOrWhiteSpace(queueMessageAttr.DeadLetterQueue))
-          deadLetterQueue = queueMessageAttr.DeadLetterQueue;
+        if (!string.IsNullOrWhiteSpace(messageAttr.DeadLetterQueue))
+          deadLetterQueue = messageAttr.DeadLetterQueue;
 
         model.QueueDeclare(deadLetterQueue, true, false, false);
 
         model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true);
 
-        model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, queueMessageAttr.QueueName);
+        model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, messageAttr.QueueName);
 
         // --> Initialize: The requested Queue.
         Dictionary<string, object> declareArguments = new Dictionary<string, object>
         {
           ["x-dead-letter-exchange"]    = _factoryConfiguration.DefaultDeadLetterExchange,
-          ["x-dead-letter-routing-key"] = queueMessageAttr.QueueName
+          ["x-dead-letter-routing-key"] = messageAttr.QueueName
         };
 
-        model.QueueDeclare(queueMessageAttr.QueueName, true, false, false, declareArguments);
+        model.QueueDeclare(messageAttr.QueueName, true, false, false, declareArguments);
 
         // Create: Exchange and bind it with the queue.
-        model.ExchangeDeclare(queueMessageAttr.ExchangeName, queueMessageAttr.ExchangeType.ToString().ToLower(), true);
-        model.QueueBind(queueMessageAttr.QueueName, queueMessageAttr.ExchangeName, queueMessageAttr.RouteKey ?? string.Empty);
+        model.ExchangeDeclare(messageAttr.ExchangeName, messageAttr.ExchangeType.ToString().ToLower(), true);
+        model.QueueBind(messageAttr.QueueName, messageAttr.ExchangeName, messageAttr.RouteKey ?? string.Empty);
 
         // --> Create: Consumer.
-        return new Consumer<T>(model, queueMessageAttr.QueueName, queueMessageAttr.PrefetchCount);
+        return new Consumer<T>(model, messageAttr.QueueName, messageAttr.PrefetchCount);
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
