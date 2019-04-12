@@ -10,6 +10,7 @@ In order to put it into play, you need a RabbitMQ server. Install it locally: [W
 - RabbitMQ.Client: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client "Nuget package") | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client "GitHub page") | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html "API Documentation").
 - [Mass Transit](http://masstransit-project.com "Mass Transit"): CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html "documentation section") has a recommendation for this service bus implementation.
 - [RawRabbit](https://rawrabbit.readthedocs.io/en/master "RawRabbit"): Modern .NET client for communication over RabbitMq, which is written for .NET Core. [GitHub page](https://github.com/pardahlman/RawRabbit "GitHub page").
+- [Rebus](https://rebus.fm/ "Rebus"): .NET service bus - an implementation of several useful messaging patterns.
 
 There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
 
@@ -139,7 +140,7 @@ private void configureServices(HostBuilderContext hostContext, IServiceCollectio
     // --> Add: Message handlers with Scrutor.
     services.Scan(scan => scan
         .FromEntryAssembly()
-            .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))ó
+            .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))Ã³
             .AsImplementedInterfaces()
             .WithSingletonLifetime());
 
