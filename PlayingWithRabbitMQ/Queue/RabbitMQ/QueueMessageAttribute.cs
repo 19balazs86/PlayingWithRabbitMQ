@@ -4,7 +4,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
   public enum ExchangeType { Direct, Fanout, Topic }
 
-  public enum DeliveryMode { NonPersistent = 1, Persistent = 2 }
+  public enum DeliveryMode { Transient = 1, Persistent = 2 }
 
   [AttributeUsage(AttributeTargets.Class)]
   public class QueueMessageAttribute : Attribute
@@ -41,7 +41,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     public ushort PrefetchCount { get; private set; }
 
     /// <summary>
-    /// Publish the message as Persistent or NonPersistent.
+    /// Publish the message as Persistent or Transient.
     /// Messages sent as Persistent that are delivered to 'durable' queues will be logged to disk.
     /// </summary>
     public DeliveryMode DeliveryMode { get; private set; }

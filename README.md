@@ -49,7 +49,7 @@ class QueueMessageAttribute : Attribute
     // This tells RabbitMQ not to give more than x message to a worker at a time.
     ushort PrefetchCount
     
-    /// Publish the message as Persistent or NonPersistent.
+    /// Publish the message as Persistent or Transient.
     /// Messages sent as Persistent that are delivered to 'durable' queues will be logged to disk.
     public DeliveryMode DeliveryMode { get; private set; }
 }
