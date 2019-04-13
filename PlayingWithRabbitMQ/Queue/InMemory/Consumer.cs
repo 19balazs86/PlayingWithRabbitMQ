@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
-  public class Consumer<T> : IConsumer<T> where T : class, new()
+  public class Consumer<T> : IConsumer<T> where T : class
   {
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 

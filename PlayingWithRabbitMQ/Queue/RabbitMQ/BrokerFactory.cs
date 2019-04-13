@@ -90,7 +90,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public IConsumer<T> CreateConsumer<T>() where T : class, new()
+    public IConsumer<T> CreateConsumer<T>() where T : class
     {
       QueueMessageAttribute messageAttr = getAndValidateAttributeFor<T>();
 

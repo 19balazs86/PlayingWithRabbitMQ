@@ -12,6 +12,6 @@ namespace PlayingWithRabbitMQ.Queue
     /// <summary>
     /// Create a Consumer to consume messages.
     /// </summary>
-    IConsumer<T> CreateConsumer<T>() where T : class, new();
+    IConsumer<T> CreateConsumer<T>() where T : class;
   }
 }

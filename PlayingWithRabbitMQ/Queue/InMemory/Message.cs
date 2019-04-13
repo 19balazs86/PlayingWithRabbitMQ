@@ -3,7 +3,7 @@ using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
-  public class Message<T> : IMessage<T> where T : class, new()
+  public class Message<T> : IMessage<T> where T : class
   {
     public string RawItem => JsonConvert.SerializeObject(Item);
 

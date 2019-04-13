@@ -7,7 +7,7 @@ using RabbitMQ.Client.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
-  public class Message<T> : IMessage<T> where T : class, new()
+  public class Message<T> : IMessage<T> where T : class
   {
     private readonly IModel _model;
     private readonly BasicDeliverEventArgs _queueMessage;

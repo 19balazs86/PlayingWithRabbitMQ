@@ -8,7 +8,7 @@ using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
-  public class ConsumerBackgroundService<T> : BackgroundService where T : class, new()
+  public class ConsumerBackgroundService<T> : BackgroundService where T : class
   {
     private readonly IBrokerFactory _brokerFactory;
     private readonly IMessageHandler<T> _messageHandler;

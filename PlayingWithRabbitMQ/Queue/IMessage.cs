@@ -1,6 +1,6 @@
 ﻿namespace PlayingWithRabbitMQ.Queue
 {
-  public interface IMessage<T> where T : class, new()
+  public interface IMessage<T> where T : class
   {
     string RawItem { get; }
 

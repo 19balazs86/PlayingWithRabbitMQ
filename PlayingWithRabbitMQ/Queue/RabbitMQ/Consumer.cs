@@ -5,7 +5,7 @@ using RabbitMQ.Client.Events;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
-  public class Consumer<T> : IConsumer<T> where T : class, new()
+  public class Consumer<T> : IConsumer<T> where T : class
   {
     private readonly IModel _model;
 
