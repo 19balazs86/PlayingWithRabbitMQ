@@ -4,7 +4,7 @@ using PlayingWithRabbitMQ.Queue.RabbitMQ;
 namespace PlayingWithRabbitMQ.DemoElements.Messages
 {
   // The login message coming from the user service. The statistics service consume it.
-  [QueueMessage(
+  [MessageSettings(
     exchangeName: "service.user",
     exchangeType: ExchangeType.Direct,
     routeKey: "login",

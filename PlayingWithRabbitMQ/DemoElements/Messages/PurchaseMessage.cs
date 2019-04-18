@@ -4,7 +4,7 @@ using PlayingWithRabbitMQ.Queue.RabbitMQ;
 namespace PlayingWithRabbitMQ.DemoElements.Messages
 {
   // The purchase message coming from the order service. The shipping service consume it.
-  [QueueMessage(
+  [MessageSettings(
     exchangeName: "service.order",
     exchangeType: ExchangeType.Direct,
     routeKey: "purchase",

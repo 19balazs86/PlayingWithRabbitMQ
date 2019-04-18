@@ -24,13 +24,13 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 - By default the application running in development mode and using an in-memory solution.
 - This solution is good for test purpose in order to follow the message from the Producer to the Consumer and handle it.
 
-#### QueueMessageAttribute
+#### MessageSettingsAttribute
 - This attribute sits on top of your message class.
 - The properties describe the path of the message from exchange to queue.
 - This kind of configuration, which needs to create Producer and Consumer.
 
 ```csharp
-class QueueMessageAttribute : Attribute
+class MessageSettingsAttribute : Attribute
 {
     // Message be published into this exchange.
     string ExchangeName
@@ -57,7 +57,7 @@ class QueueMessageAttribute : Attribute
 ```
 
 #### BrokerFactory
-- With the proper configuration of QueueMessageAttribute, you can create **Producer** (publish messages) and **Consumer** (receive messages).
+- With the proper MessageSettingsAttribute, you can create **Producer** (publish messages) and **Consumer** (receive messages).
 
 ```csharp
 public interface IBrokerFactory

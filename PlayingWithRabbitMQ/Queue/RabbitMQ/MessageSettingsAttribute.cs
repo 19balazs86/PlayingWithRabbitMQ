@@ -7,7 +7,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
   public enum DeliveryMode { Transient = 1, Persistent = 2 }
 
   [AttributeUsage(AttributeTargets.Class)]
-  public class QueueMessageAttribute : Attribute
+  public class MessageSettingsAttribute : Attribute
   {
     #region Properties
     /// <summary>
@@ -47,7 +47,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     public DeliveryMode DeliveryMode { get; private set; }
     #endregion
 
-    public QueueMessageAttribute(
+    public MessageSettingsAttribute(
       string exchangeName,
       ExchangeType exchangeType,
       string routeKey,
