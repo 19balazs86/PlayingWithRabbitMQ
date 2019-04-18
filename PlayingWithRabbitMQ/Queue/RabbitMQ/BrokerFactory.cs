@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -12,6 +11,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
   public class BrokerFactory : IBrokerFactory
   {
     private readonly BrokerFactoryConfiguration _factoryConfiguration;
+    private readonly IMessageSettingsProvider _messageSettingsProvider;
 
     private readonly IConnectionFactory _connectionFactory;
 
@@ -22,7 +22,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// </summary>
     /// <exception cref="ArgumentNullException">Thrown, if the configuration is wrong.</exception>
     /// <exception cref="ArgumentException">Thrown, if the configuration is wrong.</exception>
-    public BrokerFactory(BrokerFactoryConfiguration configuration)
+    public BrokerFactory(BrokerFactoryConfiguration configuration, IMessageSettingsProvider messageSettingsProvider = null)
     {
       BrokerFactoryConfiguration.Validate(configuration);
 
@@ -50,6 +50,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       }
 
       _factoryConfiguration = configuration;
+
+      _messageSettingsProvider = messageSettingsProvider ?? new SimpleMessageSettingsProvider();
 
       _lazyConnection = new Lazy<IConnection>(createConnection);
     }
@@ -142,12 +144,12 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    private static MessageSettingsAttribute getAndValidateSettingsFor<T>()
+    private MessageSettingsAttribute getAndValidateSettingsFor<T>() where T : class
     {
-      MessageSettingsAttribute msgSettings = typeof(T).GetCustomAttribute<MessageSettingsAttribute>();
+      MessageSettingsAttribute msgSettings = _messageSettingsProvider.GetMessageSettingsFor<T>();
 
       if (msgSettings is null)
-        throw new ArgumentNullException(nameof(msgSettings), $"QueueMessageAttribute is not present in the {typeof(T).Name}.");
+        throw new ArgumentNullException(nameof(msgSettings), $"MessageSettings is not present for the {typeof(T).Name}.");
 
       msgSettings.Validate();
 
