@@ -18,6 +18,7 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 - [Part 1](https://michaelscodingspot.com/c-job-queues/ "Part 1") - Implementations in Depth.
 - [Part 2](https://michaelscodingspot.com/c-job-queues-with-reactive-extensions-and-channels/ "Part 2") - Reactive Extensions and Channels.
 - [Part 3](https://michaelscodingspot.com/c-job-queues-part-3-with-tpl-dataflow-and-failure-handling/ "Part 3") - TPL Dataflow and Failure Handling.
+- [Performance showdown of job queues](https://michaelscodingspot.com/performance-of-producer-consumer/ "Performance showdown of job queues").
 
 ### Components
 #### In-memory solution for test
