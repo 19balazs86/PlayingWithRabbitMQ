@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using Serilog;
@@ -11,7 +12,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
   public class ConsumerBackgroundService<T> : BackgroundService where T : class
   {
     private readonly IBrokerFactory _brokerFactory;
-    private readonly IMessageHandler<T> _messageHandler;
+    private readonly IServiceProvider _serviceProvider;
 
     private readonly ActionBlock<IMessage<T>> _actionBlock;
 
@@ -19,10 +20,10 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
     private CancellationToken _stoppingToken;
 
-    public ConsumerBackgroundService(IBrokerFactory brokerFactory, IMessageHandler<T> messageHandler)
+    public ConsumerBackgroundService(IBrokerFactory brokerFactory, IServiceProvider serviceProvider)
     {
-      _brokerFactory  = brokerFactory;
-      _messageHandler = messageHandler;
+      _brokerFactory   = brokerFactory;
+      _serviceProvider = serviceProvider;
 
       // Set the MaxDegreeOfParallelism value.
       var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
@@ -75,7 +76,12 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
       try
       {
-        await _messageHandler.HandleMessageAsync(message.Item, _stoppingToken);
+        using (IServiceScope scope = _serviceProvider.CreateScope())
+        {
+          var messageHandler = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
+
+          await messageHandler.HandleMessageAsync(message.Item, _stoppingToken);
+        }
 
         message.Acknowledge();
 
@@ -86,6 +92,12 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
         Log.Warning(ex, $"The operation was canceled. The {typeof(T).Name} will be requeue.");
 
         isRequeue = true;
+      }
+      catch (InvalidOperationException ex)
+      {
+        Log.Error(ex, $"The message handler is not present in the DI container for the {typeof(T).Name}.");
+
+        isRequeue = false;
       }
       catch (MessageException ex)
       {
