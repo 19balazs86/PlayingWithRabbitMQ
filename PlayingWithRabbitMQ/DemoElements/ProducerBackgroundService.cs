@@ -28,8 +28,8 @@ namespace PlayingWithRabbitMQ.DemoElements
       {
         while (!stoppingToken.IsCancellationRequested)
         {
-          purchaseProducer.Publish(new PurchaseMessage());
-          loginProducer.Publish(new LoginMessage());
+          await purchaseProducer.PublishAsync(new PurchaseMessage());
+          await loginProducer.PublishAsync(new LoginMessage());
 
           await Task.Delay(_delaySettings.ProducerDelay, stoppingToken);
         }

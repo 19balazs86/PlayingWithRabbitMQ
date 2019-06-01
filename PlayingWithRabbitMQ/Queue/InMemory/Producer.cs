@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
@@ -11,7 +12,12 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
       _observer = observer ?? throw new ArgumentNullException(nameof(observer));
     }
 
-    public void Publish(T message) => _observer.OnNext(message);
+    public Task PublishAsync(T message)
+    {
+      _observer.OnNext(message);
+
+      return Task.CompletedTask;
+    }
 
     public void Dispose() => _observer.OnCompleted();
   }
