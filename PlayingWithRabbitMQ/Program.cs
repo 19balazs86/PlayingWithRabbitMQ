@@ -46,7 +46,7 @@ namespace PlayingWithRabbitMQ
       {
         var brokerFactoryConfiguration = new BrokerFactoryConfiguration
         {
-          Url = Environment.GetEnvironmentVariable("RabbitMQ_ConnString"),
+          Url = configuration.GetConnectionString("RabbitMQ"),
           DefaultDeadLetterExchange = "message.morgue",
           DefaultDeadLetterQueue    = "message.morgue.sink"
         };
@@ -82,7 +82,11 @@ namespace PlayingWithRabbitMQ
     }
 
     private static void configureAppConfiguration(HostBuilderContext hostContext, IConfigurationBuilder configBuilder)
-      => configBuilder.AddJsonFile("appsettings.json", false);
+    {
+      configBuilder
+        .AddJsonFile("appsettings.json", false)
+        .AddEnvironmentVariables();
+    }
 
     private static void configureLogger(HostBuilderContext hostContext, LoggerConfiguration configuration)
     {
