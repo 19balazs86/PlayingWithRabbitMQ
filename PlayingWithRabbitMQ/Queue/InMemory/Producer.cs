@@ -8,9 +8,7 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
     private readonly IObserver<T> _observer;
 
     public Producer(IObserver<T> observer)
-    {
-      _observer = observer ?? throw new ArgumentNullException(nameof(observer));
-    }
+      => _observer = observer ?? throw new ArgumentNullException(nameof(observer));
 
     public Task PublishAsync(T message)
     {

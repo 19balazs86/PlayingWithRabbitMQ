@@ -24,9 +24,9 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
 
       try
       {
-        using (var streamWriter     = new StreamWriter(fileFullPath))
-        using (var jsonWriterwriter = new JsonTextWriter(streamWriter))
-          _serializer.Serialize(jsonWriterwriter, message);
+        using (var streamWriter = new StreamWriter(fileFullPath))
+        using (var jsonWriter   = new JsonTextWriter(streamWriter))
+          _serializer.Serialize(jsonWriter, message);
       }
       catch (Exception ex)
       {

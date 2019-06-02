@@ -8,13 +8,13 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
   {
     private const string _searchPattern = "*.json";
 
-    private readonly FileSystemWatcher _fileSystemWatcher;
+    private readonly FileSystemWatcher _fsWatcher;
 
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 
     public Consumer(string messageFolderPath, string failedMessageFolderPath)
     {
-      _fileSystemWatcher = new FileSystemWatcher(messageFolderPath, _searchPattern);
+      _fsWatcher = new FileSystemWatcher(messageFolderPath, _searchPattern);
 
       // --> Func to create Message object.
       Func<string, IMessage<T>> createMessageFunc = msgPath => new Message<T>(msgPath, failedMessageFolderPath);
@@ -32,16 +32,16 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
         // Add handler.
         handler =>
         {
-          _fileSystemWatcher.Created += handler;
+          _fsWatcher.Created += handler;
 
-          _fileSystemWatcher.EnableRaisingEvents = true;
+          _fsWatcher.EnableRaisingEvents = true;
         },
         // Remove handler.
         handler =>
         {
-          _fileSystemWatcher.EnableRaisingEvents = false;
+          _fsWatcher.EnableRaisingEvents = false;
 
-          _fileSystemWatcher.Created -= handler;
+          _fsWatcher.Created -= handler;
         })
         .Select(createMessageFunc);
 
@@ -49,6 +49,6 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       MessageSource = existingFilesObservable.Concat(fsWatcherObservable);
     }
 
-    public void Dispose() => _fileSystemWatcher.Dispose();
+    public void Dispose() => _fsWatcher.Dispose();
   }
 }

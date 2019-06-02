@@ -8,9 +8,7 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 
     public Consumer(IObservable<T> sourceObservable)
-    {
-      MessageSource = sourceObservable?.Select(m => new Message<T>(m));
-    }
+      => MessageSource = sourceObservable.Select(m => new Message<T>(m));
 
     public void Dispose()
     {
