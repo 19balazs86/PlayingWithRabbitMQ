@@ -56,7 +56,13 @@ namespace PlayingWithRabbitMQ
           .AddSingleton<IBrokerFactory, BrokerFactory>();
       }
       else
+      {
+        // In-memory queuing.
         services.AddSingleton<IBrokerFactory, Queue.InMemory.BrokerFactory>();
+
+        // File system queuing.
+        //services.AddSingleton<IBrokerFactory>(new Queue.FileSystem.BrokerFactory(@"d:\Downloads\Messages"));
+      }
 
       // --> Add: DelaySettings.
       services.AddSingleton(configuration.BindTo<DelaySettings>());
@@ -68,6 +74,7 @@ namespace PlayingWithRabbitMQ
           //.UsingRegistrationStrategy(RegistrationStrategy.Append) // Default is Append.
           .AsImplementedInterfaces()
           .WithSingletonLifetime());
+      // Note: If the handler has scope dependencies, it should be present as a scope handler.
 
       // These handlers will be added by Scrutor.
       //services.AddSingleton<IMessageHandler<LoginMessage>, LoginMessageHandler>();

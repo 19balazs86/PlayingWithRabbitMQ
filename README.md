@@ -20,13 +20,25 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 - [Part 3](https://michaelscodingspot.com/c-job-queues-part-3-with-tpl-dataflow-and-failure-handling/ "Part 3") - TPL Dataflow and Failure Handling.
 - [Performance showdown of job queues](https://michaelscodingspot.com/performance-of-producer-consumer/ "Performance showdown of job queues").
 
-### Components
-#### In-memory solution for test
+### Solutions
+#### Solution 1:  In-memory (for test)
 - By default the application running in development mode and using an in-memory solution.
 - This solution is good for test purpose in order to follow the message from the Producer to the Consumer and handle it.
 
+#### Solution 2:  FileSystem (for test)
+- This version is also meant for test purposes.
+- The publisher writes the message into a JSON file in the given folder.
+- The consumer receives messages using FileSystemWatcher.
+
+#### Solution 3:  RabbitMQ
+- For production...
+
+#### Solution 4:  Logger (for test)
+- Just write a log...
+
+### Components
 #### MessageSettingsAttribute
-- This attribute sits on top of your message class.
+- Just for the RabbitMQ solution, this attribute sits on top of your message class.
 - The properties describe the path of the message from exchange to queue.
 - This kind of configuration, which needs to create Producer and Consumer.
 
@@ -58,7 +70,7 @@ class MessageSettingsAttribute : Attribute
 ```
 
 #### BrokerFactory
-- With the proper MessageSettingsAttribute, you can create **Producer** (publish messages) and **Consumer** (receive messages).
+- With the proper MessageSettingsAttribute (RabbitMQ), you can create **Producer** (publish messages) and **Consumer** (receive messages).
 
 ```csharp
 public interface IBrokerFactory
