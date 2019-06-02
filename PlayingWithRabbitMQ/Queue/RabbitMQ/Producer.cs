@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
@@ -45,15 +44,15 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       props.ContentEncoding = Encoding.UTF8.WebName;
       props.DeliveryMode    = (byte)_deliveryMode;
 
-      _model.BasicPublish(_exchangeName, _routingKey, props, message);
-
       try
       {
+        _model.BasicPublish(_exchangeName, _routingKey, props, message);
+
         _model.WaitForConfirmsOrDie(TimeSpan.FromSeconds(1));
       }
-      catch (RabbitMQClientException ex)
+      catch (Exception ex)
       {
-        throw new ProducerException("Failed to publish the message.", ex);
+        throw new ProducerException("Failed to publish the message with BasicPublish.", ex);
       }
     }
 

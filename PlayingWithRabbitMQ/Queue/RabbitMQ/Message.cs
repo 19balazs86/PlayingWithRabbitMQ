@@ -1,9 +1,9 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 {
@@ -33,9 +33,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       {
         _model.BasicAck(_queueMessage.DeliveryTag, false);
       }
-      catch (RabbitMQClientException ex)
+      catch (Exception ex)
       {
-        throw new MessageException("Failed to acknowledge the message.", ex);
+        throw new MessageException("Failed to acknowledge the message with BasicAck.", ex);
       }
     }
 
@@ -50,9 +50,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // Requeue is false, send it to the dead letter queue.
         _model.BasicNack(_queueMessage.DeliveryTag, multiple: false, requeue: requeue);
       }
-      catch (RabbitMQClientException ex)
+      catch (Exception ex)
       {
-        throw new MessageException("Failed to reject the message.", ex);
+        throw new MessageException("Failed to reject the message with BasicNack.", ex);
       }
     }
   }

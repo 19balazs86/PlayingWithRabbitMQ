@@ -30,7 +30,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       }
       catch (Exception ex)
       {
-        throw new MessageException($"Failed to save/write the {typeof(T).Name} into a JSON file.", ex);
+        throw new ProducerException($"Failed to save/write the {typeof(T).Name} into a JSON file.", ex);
       }
 
       return Task.CompletedTask;
