@@ -118,8 +118,6 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
         try
         {
           message.Reject(requeue: isRequeue.Value);
-
-          Log.Debug("Message rejected: {@RawItem}.", message.RawItem);
         }
         catch (Exception ex)
         {
