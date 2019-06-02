@@ -65,7 +65,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ObjectDisposedException"></exception>
     public Task PublishAsync(T message)
     {
-      if (message == null)
+      if (message is null)
         throw new ArgumentNullException(nameof(message));
 
       string messageText = JsonConvert.SerializeObject(message);
