@@ -10,6 +10,7 @@ using PlayingWithRabbitMQ.Queue;
 using PlayingWithRabbitMQ.Queue.BackgroundProcess;
 using PlayingWithRabbitMQ.Queue.RabbitMQ;
 using Serilog;
+using Serilog.Events;
 
 namespace PlayingWithRabbitMQ
 {
@@ -98,7 +99,8 @@ namespace PlayingWithRabbitMQ
     private static void configureLogger(HostBuilderContext hostContext, LoggerConfiguration configuration)
     {
       configuration
-        .MinimumLevel.Verbose()
+        .MinimumLevel.Debug()
+        .MinimumLevel.Override("PlayingWithRabbitMQ.Queue.BackgroundProcess", LogEventLevel.Warning)
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message}{NewLine}{Exception}");
     }
   }

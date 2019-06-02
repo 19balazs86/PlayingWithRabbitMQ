@@ -11,6 +11,8 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 {
   public class ConsumerBackgroundService<T> : BackgroundService where T : class
   {
+    private readonly ILogger _logger = Log.ForContext<ConsumerBackgroundService<T>>();
+
     private readonly IBrokerFactory _brokerFactory;
     private readonly IServiceProvider _serviceProvider;
 
@@ -40,14 +42,14 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
         // --> Create: Consumer.
         _consumer = _brokerFactory.CreateConsumer<T>();
 
-        Log.Information($"Start consuming messages(type: {typeof(T).Name}).");
+        _logger.Information($"Start consuming messages(type: {typeof(T).Name}).");
 
         // --> Start consuming messages. 
         _consumer.MessageSource.Subscribe(message => _actionBlock.Post(message), stoppingToken);
       }
       catch (Exception ex)
       {
-        Log.Error(ex, $"Failed to create Consumer for {typeof(T).Name}.");
+        _logger.Error(ex, $"Failed to create Consumer for {typeof(T).Name}.");
       }
 
       return Task.CompletedTask;
@@ -57,7 +59,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
     {
       await base.StopAsync(cancellationToken);
 
-      Log.Information($"Stop consuming {typeof(T).Name}.");
+      _logger.Information($"Stop consuming {typeof(T).Name}.");
 
       _actionBlock.Complete();
 
@@ -85,29 +87,29 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
 
         message.Acknowledge();
 
-        Log.Verbose($"Acknowledge: {typeof(T).Name}.");
+        _logger.Verbose($"Acknowledge: {typeof(T).Name}.");
       }
       catch (OperationCanceledException ex)
       {
-        Log.Warning(ex, $"The operation was canceled. The {typeof(T).Name} will be requeue.");
+        _logger.Warning(ex, $"The operation was canceled. The {typeof(T).Name} will be requeue.");
 
         isRequeue = true;
       }
       catch (InvalidOperationException ex)
       {
-        Log.Error(ex, $"The message handler is not present in the DI container for the {typeof(T).Name}.");
+        _logger.Error(ex, $"The message handler is not present in the DI container for the {typeof(T).Name}.");
 
         isRequeue = false;
       }
       catch (MessageException ex)
       {
-        Log.Error(ex, $"Failed to acknowledge the {typeof(T).Name}.");
+        _logger.Error(ex, $"Failed to acknowledge the {typeof(T).Name}.");
 
         isRequeue = false;
       }
       catch (Exception ex)
       {
-        Log.Error(ex, $"An exception occurred during processing the {typeof(T).Name}.");
+        _logger.Error(ex, $"An exception occurred during processing the {typeof(T).Name}.");
 
         isRequeue = false;
       }
@@ -118,10 +120,12 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
         try
         {
           message.Reject(requeue: isRequeue.Value);
+
+          _logger.Verbose($"Reject: {typeof(T).Name}, Requeue: {isRequeue.Value}.");
         }
         catch (Exception ex)
         {
-          Log.Error(ex, $"Failed to reject the {typeof(T).Name}.");
+          _logger.Error(ex, $"Failed to reject the {typeof(T).Name}.");
         }
       }
     }
