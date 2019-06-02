@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
 using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.RabbitMQ
@@ -79,7 +78,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // --> Create: Producer.
         return new Producer<T>(model, msgSettings.ExchangeName, msgSettings.RouteKey, msgSettings.DeliveryMode);
       }
-      catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
+      catch (Exception ex)
       {
         throw new BrokerFactoryException("Failed to create Producer.", ex);
       }
@@ -129,7 +128,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // --> Create: Consumer.
         return new Consumer<T>(model, msgSettings.QueueName, msgSettings.PrefetchCount);
       }
-      catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
+      catch (Exception ex)
       {
         throw new BrokerFactoryException("Failed to create Consumer.", ex);
       }
