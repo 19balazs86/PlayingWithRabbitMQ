@@ -44,7 +44,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
         }
         catch (Exception ex)
         {
-          throw new QueueFactoryException($"Failed to create the folder: '{msgFullPath}'.", ex);
+          throw new BrokerFactoryException($"Failed to create the folder: '{msgFullPath}'.", ex);
         }
       }
 

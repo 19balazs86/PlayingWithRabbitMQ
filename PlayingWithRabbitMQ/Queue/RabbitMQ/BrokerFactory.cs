@@ -59,7 +59,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <summary>
     /// Create Producer to publish messages.
     /// </summary>
-    /// <exception cref="QueueFactoryException"></exception>
+    /// <exception cref="BrokerFactoryException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -81,14 +81,14 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
-        throw new QueueFactoryException("Failed to create Producer.", ex);
+        throw new BrokerFactoryException("Failed to create Producer.", ex);
       }
     }
 
     /// <summary>
     /// Create Consumer to consume messages.
     /// </summary>
-    /// <exception cref="QueueFactoryException"></exception>
+    /// <exception cref="BrokerFactoryException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -131,7 +131,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       }
       catch (Exception ex) when (ex is BrokerUnreachableException || ex is RabbitMQClientException)
       {
-        throw new QueueFactoryException("Failed to create Consumer.", ex);
+        throw new BrokerFactoryException("Failed to create Consumer.", ex);
       }
     }
 

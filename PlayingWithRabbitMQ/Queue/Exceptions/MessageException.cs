@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace PlayingWithRabbitMQ.Queue.Exceptions
 {
-  public class MessageException : QueueBaseException
+  public class MessageException : QueuingException
   {
     public MessageException()
     {

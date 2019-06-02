@@ -100,7 +100,7 @@ namespace PlayingWithRabbitMQ
     {
       configuration
         .MinimumLevel.Debug()
-        .MinimumLevel.Override("PlayingWithRabbitMQ.Queue.BackgroundProcess", LogEventLevel.Warning)
+        .MinimumLevel.Override("PlayingWithRabbitMQ.Queue.BackgroundProcess", LogEventLevel.Information)
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message}{NewLine}{Exception}");
     }
   }
