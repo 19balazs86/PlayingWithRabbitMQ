@@ -19,6 +19,9 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
       return Task.CompletedTask;
     }
 
-    public void Dispose() => _observer.OnCompleted();
+    public void Dispose()
+    {
+      // Empty.
+    }
   }
 }
