@@ -1,8 +1,10 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using PlayingWithRabbitMQ.DemoElements.Messages;
 using PlayingWithRabbitMQ.Queue;
+using Serilog;
 
 namespace PlayingWithRabbitMQ.DemoElements
 {
@@ -36,8 +38,17 @@ namespace PlayingWithRabbitMQ.DemoElements
       {
         while (!stoppingToken.IsCancellationRequested)
         {
-          await purchaseProducer.PublishAsync(new PurchaseMessage());
-          await loginProducer.PublishAsync(new LoginMessage());
+          try
+          {
+            await purchaseProducer.PublishAsync(new PurchaseMessage());
+            await loginProducer.PublishAsync(new LoginMessage());
+          }
+          catch (Exception ex)
+          {
+            Log.Error(ex, "Failed to publish a message.");
+
+            await Task.Delay(5000, stoppingToken);
+          }
 
           await Task.Delay(_delaySettings.ProducerDelay, stoppingToken);
         }
