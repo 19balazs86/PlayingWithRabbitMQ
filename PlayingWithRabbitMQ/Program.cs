@@ -63,6 +63,9 @@ namespace PlayingWithRabbitMQ
 
         // File system queuing.
         //services.AddSingleton<IBrokerFactory>(new Queue.FileSystem.BrokerFactory(@"d:\Downloads\Messages"));
+
+        // Redis pub/sub messaging.
+        //services.AddSingleton<IBrokerFactory>(new Queue.Redis.BrokerFactory());
       }
 
       // --> Add: DelaySettings.

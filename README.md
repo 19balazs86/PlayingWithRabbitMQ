@@ -33,7 +33,10 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 ##### 3)  RabbitMQ
 - For production...
 
-##### 4)  Logger (for test)
+##### 4)  Redis
+- This is a pub/sub messaging solution, not queuing.
+
+##### 5)  Logger (for test)
 - Just write a log...
 
 ### Components
