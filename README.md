@@ -20,20 +20,20 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 - [Part 3](https://michaelscodingspot.com/c-job-queues-part-3-with-tpl-dataflow-and-failure-handling/ "Part 3") - TPL Dataflow and Failure Handling.
 - [Performance showdown of job queues](https://michaelscodingspot.com/performance-of-producer-consumer/ "Performance showdown of job queues").
 
-### Solutions
-#### Solution 1:  In-memory (for test)
+### Implementations
+##### 1)  In-memory (for test)
 - By default the application running in development mode and using an in-memory solution.
 - This solution is good for test purpose in order to follow the message from the Producer to the Consumer and handle it.
 
-#### Solution 2:  FileSystem (for test)
+##### 2)  FileSystem (for test)
 - This version is also meant for test purposes.
 - The publisher writes the message into a JSON file in the given folder.
 - The consumer receives messages using FileSystemWatcher.
 
-#### Solution 3:  RabbitMQ
+##### 3)  RabbitMQ
 - For production...
 
-#### Solution 4:  Logger (for test)
+##### 4)  Logger (for test)
 - Just write a log...
 
 ### Components
