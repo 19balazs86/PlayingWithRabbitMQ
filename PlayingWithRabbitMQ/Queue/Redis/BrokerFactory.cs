@@ -36,7 +36,8 @@ namespace PlayingWithRabbitMQ.Queue.Redis
 
     public void Dispose()
     {
-      _connection.Dispose();
+      if (_lazyConnection.IsValueCreated)
+        _lazyConnection.Value.Dispose();
     }
   }
 }
