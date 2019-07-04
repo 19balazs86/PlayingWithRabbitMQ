@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Mime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
@@ -62,7 +63,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ProducerException"></exception>
     /// <exception cref="ObjectDisposedException"></exception>
-    public Task PublishAsync(T message)
+    public Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
       if (message is null)
         throw new ArgumentNullException(nameof(message));

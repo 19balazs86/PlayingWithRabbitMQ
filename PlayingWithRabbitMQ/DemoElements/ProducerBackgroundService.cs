@@ -28,8 +28,8 @@ namespace PlayingWithRabbitMQ.DemoElements
       using (IProducer<PurchaseMessage> purchaseProducer = _brokerFactory.CreateProducer<PurchaseMessage>())
       using (IProducer<LoginMessage> loginProducer       = _brokerFactory.CreateProducer<LoginMessage>())
       {
-        await purchaseProducer.PublishAsync(new PurchaseMessage());
-        await loginProducer.PublishAsync(new LoginMessage());
+        await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
+        await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
       }
 
       // In general, do not need to keep the connection open.
@@ -40,8 +40,8 @@ namespace PlayingWithRabbitMQ.DemoElements
         {
           try
           {
-            await purchaseProducer.PublishAsync(new PurchaseMessage());
-            await loginProducer.PublishAsync(new LoginMessage());
+            await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
+            await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
           }
           catch (Exception ex)
           {

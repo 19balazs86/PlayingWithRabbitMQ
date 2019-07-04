@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
@@ -15,7 +16,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
     public Producer(string messageFolderPath)
       => _messageFolderPath = messageFolderPath;
 
-    public Task PublishAsync(T message)
+    public Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
       if (message is null)
         throw new ArgumentNullException(nameof(message));

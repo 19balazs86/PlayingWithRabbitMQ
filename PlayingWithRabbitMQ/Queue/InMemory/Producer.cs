@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
@@ -10,7 +11,7 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
     public Producer(IObserver<T> observer)
       => _observer = observer ?? throw new ArgumentNullException(nameof(observer));
 
-    public Task PublishAsync(T message)
+    public Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
       _observer.OnNext(message);
 

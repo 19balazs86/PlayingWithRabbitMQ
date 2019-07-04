@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue
@@ -8,6 +9,6 @@ namespace PlayingWithRabbitMQ.Queue
     /// <summary>
     /// Publish a message.
     /// </summary>
-    Task PublishAsync(T message);
+    Task PublishAsync(T message, CancellationToken cancelToken = default);
   }
 }

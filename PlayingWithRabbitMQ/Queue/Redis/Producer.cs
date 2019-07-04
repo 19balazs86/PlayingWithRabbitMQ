@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
@@ -18,7 +19,7 @@ namespace PlayingWithRabbitMQ.Queue.Redis
       _channel = typeof(T).FullName;
     }
 
-    public async Task PublishAsync(T message)
+    public async Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
       if (message is null)
         throw new ArgumentNullException(nameof(message));
