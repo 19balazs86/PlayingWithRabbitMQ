@@ -85,11 +85,12 @@ namespace PlayingWithRabbitMQ
       //services.AddSingleton<IMessageHandler<PurchaseMessage>, PurchaseMessageHandler>();
 
       // --> Add: Background services.
-      services.AddHostedService<ProducerBackgroundService>(); // Demo purpose.
-
       // Message consumers in BackgroundService.
       services.AddHostedService<ConsumerBackgroundService<LoginMessage>>();
       services.AddHostedService<ConsumerBackgroundService<PurchaseMessage>>();
+
+      // Demo purpose.
+      services.AddHostedService<ProducerBackgroundService>();
     }
 
     private static void configureAppConfiguration(HostBuilderContext hostContext, IConfigurationBuilder configBuilder)
