@@ -98,6 +98,8 @@ namespace PlayingWithRabbitMQ
       configBuilder
         .AddJsonFile("appsettings.json", false)
         .AddEnvironmentVariables();
+
+      // Custom connection string from environment variable, key: CUSTOMCONNSTR_RabbitMQ.
     }
 
     private static void configureLogger(HostBuilderContext hostContext, LoggerConfiguration configuration)
