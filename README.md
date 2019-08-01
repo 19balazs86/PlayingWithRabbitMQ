@@ -2,6 +2,8 @@
 
 This .Net Core application is a complete example (framework) to publish and consume messages with [RabbitMQ](https://www.rabbitmq.com) in a convenient way.
 
+[Separate branch](https://github.com/19balazs86/PlayingWithRabbitMQ/tree/netcoreapp2.2) with the .NET Core 2.2 version.
+
 ![](https://www.cloudamqp.com/img/docs/camqp.png)
 
 In order to put it into play, you need a RabbitMQ server. Install it locally: [Windows](http://www.rabbitmq.com/install-windows.html) |  Docker | [CloudAMQP](https://www.cloudamqp.com/plans.html) free plan: Little Lemur - For Development.
