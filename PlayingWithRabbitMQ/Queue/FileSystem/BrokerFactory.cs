@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Threading.Tasks;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.FileSystem
@@ -20,11 +21,11 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       _failedMessagePathDic = new ConcurrentDictionary<Type, string>();
     }
 
-    public IProducer<T> CreateProducer<T>() where T : class
-      => new Producer<T>(getMessagePath<T>());
+    public Task<IProducer<T>> CreateProducerAsync<T>() where T : class
+      => Task.FromResult<IProducer<T>>(new Producer<T>(getMessagePath<T>()));
 
-    public IConsumer<T> CreateConsumer<T>() where T : class
-      => new Consumer<T>(getMessagePath<T>(), getFailedMessagePath<T>());
+    public Task<IConsumer<T>> CreateConsumerAsync<T>() where T : class
+      => Task.FromResult<IConsumer<T>>(new Consumer<T>(getMessagePath<T>(), getFailedMessagePath<T>()));
 
     private string getMessagePath<T>()
       => _messagePathDic.GetOrAdd(typeof(T), t => prepareDirectoryForMessage(t));

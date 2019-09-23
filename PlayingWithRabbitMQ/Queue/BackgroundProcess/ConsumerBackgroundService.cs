@@ -33,26 +33,24 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
       _actionBlock = new ActionBlock<IMessage<T>>(handleMessage, options);
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
       _stoppingToken = stoppingToken;
 
       try
       {
         // --> Create: Consumer.
-        _consumer = _brokerFactory.CreateConsumer<T>();
+        _consumer = await _brokerFactory.CreateConsumerAsync<T>();
 
         _logger.Information($"Start consuming messages(type: {typeof(T).Name}).");
 
-        // --> Start consuming messages. 
+        // --> Start consuming messages.
         _consumer.MessageSource.Subscribe(message => _actionBlock.Post(message), stoppingToken);
       }
       catch (Exception ex)
       {
-        _logger.Error(ex, $"Failed to create Consumer for {typeof(T).Name}.");
+        _logger.Fatal(ex, $"Failed to create Consumer for {typeof(T).Name}.");
       }
-
-      return Task.CompletedTask;
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

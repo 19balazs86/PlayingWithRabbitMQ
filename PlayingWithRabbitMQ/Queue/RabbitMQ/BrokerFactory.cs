@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -62,7 +63,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public IProducer<T> CreateProducer<T>() where T : class
+    public Task<IProducer<T>> CreateProducerAsync<T>() where T : class
     {
       MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 
@@ -70,13 +71,15 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       {
         // --> Create: Model.
         IModel model = _lazyConnection.Value.CreateModel();
-        
+
         // Create the requested exchange.
         model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
         model.ConfirmSelect();
 
         // --> Create: Producer.
-        return new Producer<T>(model, msgSettings.ExchangeName, msgSettings.RouteKey, msgSettings.DeliveryMode);
+        IProducer<T> producer = new Producer<T>(model, msgSettings.ExchangeName, msgSettings.RouteKey, msgSettings.DeliveryMode);
+
+        return Task.FromResult(producer);
       }
       catch (Exception ex)
       {
@@ -91,7 +94,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public IConsumer<T> CreateConsumer<T>() where T : class
+    public Task<IConsumer<T>> CreateConsumerAsync<T>() where T : class
     {
       MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 
@@ -126,7 +129,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         model.QueueBind(msgSettings.QueueName, msgSettings.ExchangeName, msgSettings.RouteKey ?? string.Empty);
 
         // --> Create: Consumer.
-        return new Consumer<T>(model, msgSettings.QueueName, msgSettings.PrefetchCount);
+        IConsumer<T> consumer = new Consumer<T>(model, msgSettings.QueueName, msgSettings.PrefetchCount);
+
+        return Task.FromResult(consumer);
       }
       catch (Exception ex)
       {

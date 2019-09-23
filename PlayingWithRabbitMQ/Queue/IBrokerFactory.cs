@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue
 {
@@ -7,11 +8,11 @@ namespace PlayingWithRabbitMQ.Queue
     /// <summary>
     /// Create a Producer to publish messages.
     /// </summary>
-    IProducer<T> CreateProducer<T>() where T : class;
+    Task<IProducer<T>> CreateProducerAsync<T>() where T : class;
 
     /// <summary>
     /// Create a Consumer to consume messages.
     /// </summary>
-    IConsumer<T> CreateConsumer<T>() where T : class;
+    Task<IConsumer<T>> CreateConsumerAsync<T>() where T : class;
   }
 }
