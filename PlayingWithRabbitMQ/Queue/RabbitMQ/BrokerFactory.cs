@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
@@ -63,7 +64,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Task<IProducer<T>> CreateProducerAsync<T>() where T : class
+    public Task<IProducer<T>> CreateProducerAsync<T>(CancellationToken cancelToken = default) where T : class
     {
       MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 
@@ -94,7 +95,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Task<IConsumer<T>> CreateConsumerAsync<T>() where T : class
+    public Task<IConsumer<T>> CreateConsumerAsync<T>(CancellationToken cancelToken = default) where T : class
     {
       MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 

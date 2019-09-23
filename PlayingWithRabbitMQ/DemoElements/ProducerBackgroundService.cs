@@ -25,16 +25,16 @@ namespace PlayingWithRabbitMQ.DemoElements
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
       // Publish 1-1 message and dispose/close.
-      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>())
-      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>())
+      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
+      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
       {
         await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
         await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
       }
 
       // In general, do not need to keep the connection open.
-      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>())
-      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>())
+      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
+      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
       {
         while (!stoppingToken.IsCancellationRequested)
         {

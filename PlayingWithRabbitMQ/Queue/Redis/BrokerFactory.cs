@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using StackExchange.Redis;
@@ -20,10 +21,10 @@ namespace PlayingWithRabbitMQ.Queue.Redis
       _lazySubscriber = new Lazy<ISubscriber>(() => _connection.GetSubscriber());
     }
 
-    public Task<IProducer<T>> CreateProducerAsync<T>() where T : class
+    public Task<IProducer<T>> CreateProducerAsync<T>(CancellationToken cancelToken = default) where T : class
       => Task.FromResult<IProducer<T>>(new Producer<T>(_subscriber));
 
-    public Task<IConsumer<T>> CreateConsumerAsync<T>() where T : class
+    public Task<IConsumer<T>> CreateConsumerAsync<T>(CancellationToken cancelToken = default) where T : class
     {
       try
       {

@@ -40,7 +40,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
       try
       {
         // --> Create: Consumer.
-        _consumer = await _brokerFactory.CreateConsumerAsync<T>();
+        _consumer = await _brokerFactory.CreateConsumerAsync<T>(stoppingToken);
 
         _logger.Information($"Start consuming messages(type: {typeof(T).Name}).");
 
