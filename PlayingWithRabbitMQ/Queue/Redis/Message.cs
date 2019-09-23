@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace PlayingWithRabbitMQ.Queue.Redis
 {
@@ -10,14 +11,10 @@ namespace PlayingWithRabbitMQ.Queue.Redis
 
     public Message(string message) => RawItem = message;
 
-    public void Acknowledge()
-    {
-      // This is a pub/sub messaging system, not queuing.
-    }
+    // This is a pub/sub messaging system, not queuing.
+    public Task AcknowledgeAsync() => Task.CompletedTask;
 
-    public void Reject(bool requeue = false)
-    {
-      // This is a pub/sub messaging system, not queuing.
-    }
+    // This is a pub/sub messaging system, not queuing.
+    public Task RejectAsync(bool requeue = false) => Task.CompletedTask;
   }
 }

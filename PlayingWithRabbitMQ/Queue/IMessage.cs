@@ -1,4 +1,6 @@
-﻿namespace PlayingWithRabbitMQ.Queue
+﻿using System.Threading.Tasks;
+
+namespace PlayingWithRabbitMQ.Queue
 {
   public interface IMessage<T> where T : class
   {
@@ -12,11 +14,11 @@
     /// <summary>
     /// Acknowledge the message.
     /// </summary>
-    void Acknowledge();
+    Task AcknowledgeAsync();
 
     /// <summary>
     /// Reject the message. It will be sent in to the dead letter queue.
     /// </summary>
-    void Reject(bool requeue = false);
+    Task RejectAsync(bool requeue = false);
   }
 }

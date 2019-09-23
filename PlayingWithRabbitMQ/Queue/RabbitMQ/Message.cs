@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
@@ -22,16 +23,18 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       _model        = model;
       _queueMessage = queueMessage;
     }
-    
+
     /// <summary>
     /// Acknowledge the message.
     /// </summary>
     /// <exception cref="MessageException"></exception>
-    public void Acknowledge()
+    public Task AcknowledgeAsync()
     {
       try
       {
         _model.BasicAck(_queueMessage.DeliveryTag, false);
+
+        return Task.CompletedTask;
       }
       catch (Exception ex)
       {
@@ -43,12 +46,14 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// Reject the message. It will be sent in to the dead letter queue.
     /// </summary>
     /// <exception cref="MessageException"></exception>
-    public void Reject(bool requeue = false)
+    public Task RejectAsync(bool requeue = false)
     {
       try
       {
         // Requeue is false, send it to the dead letter queue.
         _model.BasicNack(_queueMessage.DeliveryTag, multiple: false, requeue: requeue);
+
+        return Task.CompletedTask;
       }
       catch (Exception ex)
       {
