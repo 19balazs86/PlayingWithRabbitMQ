@@ -12,7 +12,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
   public class BrokerFactory : IBrokerFactory
   {
     private readonly BrokerFactoryConfiguration _factoryConfiguration;
-    private readonly IMessageSettingsProvider _messageSettingsProvider;
+    private readonly IAttributeProvider<MessageSettingsAttribute> _attributeProvider;
 
     private readonly IConnectionFactory _connectionFactory;
 
@@ -23,7 +23,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// </summary>
     /// <exception cref="ArgumentNullException">Thrown, if the configuration is wrong.</exception>
     /// <exception cref="ArgumentException">Thrown, if the configuration is wrong.</exception>
-    public BrokerFactory(BrokerFactoryConfiguration configuration, IMessageSettingsProvider messageSettingsProvider = null)
+    public BrokerFactory(
+      BrokerFactoryConfiguration configuration,
+      IAttributeProvider<MessageSettingsAttribute> attributeProvider = null)
     {
       BrokerFactoryConfiguration.Validate(configuration);
 
@@ -52,7 +54,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
       _factoryConfiguration = configuration;
 
-      _messageSettingsProvider = messageSettingsProvider ?? new SimpleMessageSettingsProvider();
+      _attributeProvider = attributeProvider ?? new SimpleAttributeProvider<MessageSettingsAttribute>();
 
       _lazyConnection = new Lazy<IConnection>(createConnection);
     }
@@ -151,7 +153,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     private MessageSettingsAttribute getAndValidateSettingsFor<T>() where T : class
     {
-      MessageSettingsAttribute msgSettings = _messageSettingsProvider.GetMessageSettingsFor<T>();
+      MessageSettingsAttribute msgSettings = _attributeProvider.GetAttributeFor<T>();
 
       if (msgSettings is null)
         throw new ArgumentNullException(nameof(msgSettings), $"MessageSettings is not present for the {typeof(T).Name}.");
