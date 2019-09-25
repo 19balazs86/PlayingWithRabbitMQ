@@ -24,34 +24,32 @@ namespace PlayingWithRabbitMQ.DemoElements
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-      // Publish 1-1 message and dispose/close.
-      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
-      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
+      try
       {
-        await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
-        await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
-      }
-
-      // In general, do not need to keep the connection open.
-      using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
-      using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
-      {
-        while (!stoppingToken.IsCancellationRequested)
+        // Publish 1-1 message and dispose/close.
+        using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
+        using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
         {
-          try
+          await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
+          await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
+        }
+
+        // In general, do not need to keep the connection open.
+        using (IProducer<PurchaseMessage> purchaseProducer = await _brokerFactory.CreateProducerAsync<PurchaseMessage>(stoppingToken))
+        using (IProducer<LoginMessage> loginProducer       = await _brokerFactory.CreateProducerAsync<LoginMessage>(stoppingToken))
+        {
+          while (!stoppingToken.IsCancellationRequested)
           {
             await purchaseProducer.PublishAsync(new PurchaseMessage(), stoppingToken);
             await loginProducer.PublishAsync(new LoginMessage(), stoppingToken);
-          }
-          catch (Exception ex)
-          {
-            Log.Error(ex, "Failed to publish a message.");
 
-            await Task.Delay(5000, stoppingToken);
+            await Task.Delay(_delaySettings.ProducerDelay, stoppingToken);
           }
-
-          await Task.Delay(_delaySettings.ProducerDelay, stoppingToken);
         }
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "ProducerBackgroundService encountered an exception.");
       }
     }
   }
