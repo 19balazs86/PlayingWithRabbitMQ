@@ -7,7 +7,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Serilog;
 
-namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
+namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 {
   public class Consumer<T> : IConsumer<T> where T : class
   {

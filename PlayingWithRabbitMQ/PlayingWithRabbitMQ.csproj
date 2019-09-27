@@ -25,4 +25,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Queue\Azure\ServiceBus\Topic\" />
+  </ItemGroup>
+
 </Project>

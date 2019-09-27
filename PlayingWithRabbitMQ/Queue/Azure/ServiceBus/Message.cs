@@ -6,7 +6,7 @@ using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
-namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
+namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 {
   public class Message<T> : IMessage<T> where T : class
   {

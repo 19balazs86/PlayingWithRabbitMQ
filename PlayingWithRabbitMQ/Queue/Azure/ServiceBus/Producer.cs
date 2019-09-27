@@ -7,17 +7,17 @@ using Microsoft.Azure.ServiceBus.Core;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
-namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
+namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 {
   public class Producer<T> : IProducer<T> where T : class
   {
-    private static readonly JsonSerializer _serializer = new JsonSerializer();
-
     private readonly ISenderClient _senderClient;
+    private readonly string _routeKey;
 
-    public Producer(ISenderClient senderClient)
+    public Producer(ISenderClient senderClient, string routeKey = null)
     {
       _senderClient = senderClient;
+      _routeKey     = routeKey;
     }
 
     public async Task PublishAsync(T message, CancellationToken cancelToken = default)
@@ -27,6 +27,9 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
         string messageJson = JsonConvert.SerializeObject(message);
 
         Message msg = new Message(Encoding.UTF8.GetBytes(messageJson));
+
+        if (!string.IsNullOrWhiteSpace(_routeKey))
+          msg.UserProperties.Add("RouteKey", _routeKey);
 
         await _senderClient.SendAsync(msg);
       }
