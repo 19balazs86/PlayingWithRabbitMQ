@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
@@ -29,7 +28,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// Acknowledge the message.
     /// </summary>
     /// <exception cref="MessageException"></exception>
-    public Task AcknowledgeAsync(CancellationToken cancelToken = default)
+    public Task AcknowledgeAsync()
     {
       try
       {
@@ -47,7 +46,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// Reject the message. It will be sent in to the dead letter queue.
     /// </summary>
     /// <exception cref="MessageException"></exception>
-    public Task RejectAsync(bool requeue = false, CancellationToken cancelToken = default)
+    public Task RejectAsync(bool requeue = false)
     {
       try
       {

@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -16,14 +15,14 @@ namespace PlayingWithRabbitMQ.Queue.InMemory
       Item = message;
     }
 
-    public Task AcknowledgeAsync(CancellationToken cancelToken = default)
+    public Task AcknowledgeAsync()
     {
       Log.Verbose($"InMemory - Acknowledge message({Item.GetType().Name}).");
 
       return Task.CompletedTask;
     }
 
-    public Task RejectAsync(bool requeue = false, CancellationToken cancelToken = default)
+    public Task RejectAsync(bool requeue = false)
     {
       Log.Verbose($"InMemory - Reject message({Item.GetType().Name}) with requeue = {requeue}.");
 

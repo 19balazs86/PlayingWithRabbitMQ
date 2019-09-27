@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue
 {
@@ -15,11 +14,11 @@ namespace PlayingWithRabbitMQ.Queue
     /// <summary>
     /// Acknowledge the message.
     /// </summary>
-    Task AcknowledgeAsync(CancellationToken cancelToken = default);
+    Task AcknowledgeAsync();
 
     /// <summary>
     /// Reject the message. It will be sent in to the dead letter queue.
     /// </summary>
-    Task RejectAsync(bool requeue = false, CancellationToken cancelToken = default);
+    Task RejectAsync(bool requeue = false);
   }
 }

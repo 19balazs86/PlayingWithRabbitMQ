@@ -83,7 +83,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
           await messageHandler.HandleMessageAsync(message.Item, _stoppingToken);
         }
 
-        await message.AcknowledgeAsync(_stoppingToken);
+        await message.AcknowledgeAsync();
 
         _logger.Verbose($"Acknowledge: {typeof(T).Name}.");
       }
@@ -117,7 +117,7 @@ namespace PlayingWithRabbitMQ.Queue.BackgroundProcess
       {
         try
         {
-          await message.RejectAsync(requeue: isRequeue.Value, _stoppingToken);
+          await message.RejectAsync(requeue: isRequeue.Value);
 
           _logger.Verbose($"Reject: {typeof(T).Name}, Requeue: {isRequeue.Value}.");
         }

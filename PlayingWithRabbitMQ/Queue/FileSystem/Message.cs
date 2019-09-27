@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
@@ -26,7 +25,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       _lazyRawItem = new Lazy<string>(() => File.ReadAllText(_messageFullPath));
     }
 
-    public Task AcknowledgeAsync(CancellationToken cancelToken = default)
+    public Task AcknowledgeAsync()
     {
       try
       {
@@ -40,7 +39,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       }
     }
 
-    public Task RejectAsync(bool requeue = false, CancellationToken cancelToken = default)
+    public Task RejectAsync(bool requeue = false)
     {
       if (requeue) return Task.CompletedTask; // Keep the file/message in the folder.
 

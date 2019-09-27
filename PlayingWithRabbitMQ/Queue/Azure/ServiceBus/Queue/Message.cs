@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
@@ -24,7 +23,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
       _message        = message;
     }
 
-    public async Task AcknowledgeAsync(CancellationToken cancelToken = default)
+    public async Task AcknowledgeAsync()
     {
       try
       {
@@ -36,7 +35,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
       }
     }
 
-    public async Task RejectAsync(bool requeue = false, CancellationToken cancelToken = default)
+    public async Task RejectAsync(bool requeue = false)
     {
       try
       {
