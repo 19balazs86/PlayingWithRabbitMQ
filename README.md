@@ -40,6 +40,15 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 ##### 5)  Logger (for test)
 - Just write a log...
 
+##### 6) Azure Service Bus
+
+- Using queues for general use without any extra features like duplicate detection and sessions, which is more for special business case.
+- Resources
+  - Microsoft: [Documentation](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) | [Microsoft.Azure.ServiceBus Namespace](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.servicebus?view=azure-dotnet).
+  - GitHub: [Samples](https://github.com/Azure/azure-service-bus/tree/master/samples/DotNet) | [Microsoft.Azure.ServiceBus source code](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/servicebus/Microsoft.Azure.ServiceBus/src).
+  - [Using Azure Service Bus Queues and Topics series](https://damienbod.com/2019/04/23/using-azure-service-bus-queues-with-asp-net-core-services/) *(Damien Bod)*.
+  - [Migrating to the New Azure Service Bus SDK](https://markheath.net/post/migrating-to-new-servicebus-sdk) *(Mark Heath)*.
+
 ### Components
 #### MessageSettingsAttribute
 - Just for the RabbitMQ solution, this attribute sits on top of your message class.
@@ -157,7 +166,7 @@ private void configureServices(HostBuilderContext hostContext, IServiceCollectio
     // --> Add: Message handlers with Scrutor.
     services.Scan(scan => scan
         .FromEntryAssembly()
-            .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))ó
+            .AddClasses(classes => classes.AssignableTo(typeof(IMessageHandler<>)))
             .AsImplementedInterfaces()
             .WithSingletonLifetime());
 

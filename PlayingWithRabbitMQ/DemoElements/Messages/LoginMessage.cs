@@ -1,4 +1,5 @@
 ﻿using System;
+using PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue;
 using PlayingWithRabbitMQ.Queue.RabbitMQ;
 
 namespace PlayingWithRabbitMQ.DemoElements.Messages
@@ -10,6 +11,7 @@ namespace PlayingWithRabbitMQ.DemoElements.Messages
     routeKey: "login",
     queueName: "user.login.statistics",
     deadLetterQueue: "user.login.statistics.sink")]
+  [AzureQueue(queueName: "user.login", maxConcurrentCalls: 5)]
   public class LoginMessage
   {
     public Guid UserId { get; set; }

@@ -47,6 +47,7 @@ namespace PlayingWithRabbitMQ.DemoElements
           }
         }
       }
+      catch (OperationCanceledException) { }
       catch (Exception ex)
       {
         Log.Error(ex, "ProducerBackgroundService encountered an exception.");
