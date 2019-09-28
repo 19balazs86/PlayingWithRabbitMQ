@@ -1,5 +1,6 @@
 ﻿using System;
 using PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue;
+using PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic;
 using PlayingWithRabbitMQ.Queue.RabbitMQ;
 
 namespace PlayingWithRabbitMQ.DemoElements.Messages
@@ -12,6 +13,7 @@ namespace PlayingWithRabbitMQ.DemoElements.Messages
     queueName: "order.purchase.shipping",
     deadLetterQueue: "order.purchase.shipping.sink")]
   [AzureQueue(queueName: "order.purchase", maxConcurrentCalls: 5)]
+  [AzureTopic(topic: "service.order", subscription: "order.purchase.shipping", routeKey: "purchase")]
   public class PurchaseMessage
   {
     public Guid Id { get; set; }

@@ -69,6 +69,9 @@ namespace PlayingWithRabbitMQ
 
         // Azure queue.
         //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Queue.BrokerFactory(configuration.GetConnectionString("ServiceBus")));
+
+        // Azure topic.
+        //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Topic.BrokerFactory(configuration.GetConnectionString("ServiceBus")));
       }
 
       // --> Add: DelaySettings.

@@ -42,7 +42,7 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 
 ##### 6) Azure Service Bus
 
-- Using queues for general use without any extra features like duplicate detection and sessions, which is more for special business case.
+- Using queues and topics for general use without any extra features like duplicate detection and sessions, which is more for special business case.
 - Resources
   - Microsoft: [Documentation](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) | [Microsoft.Azure.ServiceBus Namespace](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.servicebus?view=azure-dotnet).
   - GitHub: [Samples](https://github.com/Azure/azure-service-bus/tree/master/samples/DotNet) | [Microsoft.Azure.ServiceBus source code](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/servicebus/Microsoft.Azure.ServiceBus/src).
