@@ -17,7 +17,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
       _fsWatcher = new FileSystemWatcher(messageFolderPath, _searchPattern);
 
       // --> Func to create Message object.
-      Func<string, IMessage<T>> createMessageFunc = msgPath => new Message<T>(msgPath, failedMessageFolderPath);
+      IMessage<T> createMessageFunc(string msgPath) => new Message<T>(msgPath, failedMessageFolderPath);
 
       // --> Create Observable for the existing files in the folder.
       IObservable<IMessage<T>> existingFilesObservable = Directory
@@ -43,6 +43,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
 
           _fsWatcher.Created -= handler;
         })
+        .Delay(TimeSpan.FromMilliseconds(500)) // To avoid an exception when the message picks up, but Producer is still writing it.
         .Select(createMessageFunc);
 
       // --> Create Observable to cancat these 2 source.
