@@ -2,8 +2,7 @@
 
 namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
 {
-  [AttributeUsage(AttributeTargets.Class)]
-  public class AzureTopicAttribute : Attribute
+  public class AzureTopicAttribute : AzureBaseAttribute
   {
     public string Topic { get; private set; }
     public string Subscription { get; private set; }
@@ -18,7 +17,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
       MaxConcurrentCalls = maxConcurrentCalls;
     }
 
-    public void Validate()
+    public override void Validate()
     {
       if (string.IsNullOrWhiteSpace(Topic))
         throw new ArgumentException($"{nameof(Topic)} is missing.");

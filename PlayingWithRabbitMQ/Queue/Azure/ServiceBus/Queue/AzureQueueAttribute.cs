@@ -2,8 +2,7 @@
 
 namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
 {
-  [AttributeUsage(AttributeTargets.Class)]
-  public class AzureQueueAttribute : Attribute
+  public class AzureQueueAttribute : AzureBaseAttribute
   {
     public string QueueName { get; private set; }
     public int MaxConcurrentCalls { get; private set; }
@@ -14,7 +13,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
       MaxConcurrentCalls = maxConcurrentCalls;
     }
 
-    public void Validate()
+    public override void Validate()
     {
       if (string.IsNullOrWhiteSpace(QueueName))
         throw new ArgumentException($"{nameof(QueueName)} is missing.");
