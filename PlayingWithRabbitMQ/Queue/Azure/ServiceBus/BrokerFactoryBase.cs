@@ -17,6 +17,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 
     protected readonly ConcurrentDictionary<string, ISenderClient> _senderClientsDic;
     protected readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoresDic;
+    protected readonly ConcurrentDictionary<Type, A> _attributesDic;
 
     public BrokerFactoryBase(string connectionString, IAttributeProvider<A> attributeProvider = null)
     {
@@ -30,6 +31,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 
       _senderClientsDic = new ConcurrentDictionary<string, ISenderClient>();
       _semaphoresDic    = new ConcurrentDictionary<string, SemaphoreSlim>();
+      _attributesDic    = new ConcurrentDictionary<Type, A>();
     }
 
     public abstract Task<IConsumer<T>> CreateConsumerAsync<T>(CancellationToken cancelToken = default) where T : class;
@@ -56,14 +58,19 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 
     protected A getAndValidateAttributeFor<T>() where T : class
     {
-      A msgSettings = _attributeProvider.GetAttributeFor<T>();
+      Type typeFor = typeof(T);
+
+      if (_attributesDic.TryGetValue(typeFor, out A msgSettings))
+        return msgSettings;
+
+      msgSettings = _attributeProvider.GetAttributeFor<T>();
 
       if (msgSettings is null)
         throw new NullReferenceException($"{typeof(A).Name} is not present for the {typeof(T).Name}.");
 
       msgSettings.Validate();
 
-      return msgSettings;
+      return _attributesDic.GetOrAdd(typeFor, msgSettings);
     }
   }
 }

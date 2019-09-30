@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     private readonly IConnectionFactory _connectionFactory;
 
     private readonly Lazy<IConnection> _lazyConnection;
+
+    private readonly ConcurrentDictionary<Type, MessageSettingsAttribute> _attributesDic;
 
     /// <summary>
     /// BrokerFactory constructor.
@@ -57,6 +60,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       _attributeProvider = attributeProvider ?? new SimpleAttributeProvider<MessageSettingsAttribute>();
 
       _lazyConnection = new Lazy<IConnection>(createConnection);
+
+      _attributesDic = new ConcurrentDictionary<Type, MessageSettingsAttribute>();
     }
 
     /// <summary>
@@ -153,14 +158,19 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     private MessageSettingsAttribute getAndValidateSettingsFor<T>() where T : class
     {
-      MessageSettingsAttribute msgSettings = _attributeProvider.GetAttributeFor<T>();
+      Type typeFor = typeof(T);
+
+      if (_attributesDic.TryGetValue(typeFor, out MessageSettingsAttribute msgSettings))
+        return msgSettings;
+
+      msgSettings = _attributeProvider.GetAttributeFor<T>();
 
       if (msgSettings is null)
         throw new ArgumentNullException(nameof(msgSettings), $"MessageSettings is not present for the {typeof(T).Name}.");
 
       msgSettings.Validate();
 
-      return msgSettings;
+      return _attributesDic.GetOrAdd(typeFor, msgSettings);
     }
 
     private IConnection createConnection()
