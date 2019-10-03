@@ -67,11 +67,17 @@ namespace PlayingWithRabbitMQ
         // Redis pub/sub messaging.
         //services.AddSingleton<IBrokerFactory>(new Queue.Redis.BrokerFactory());
 
+        var sbConfiguration = new Queue.Azure.ServiceBus.ServiceBusConfiguration
+        {
+          ConnectionString = configuration.GetConnectionString("ServiceBus"),
+          SkipManagement   = false
+        };
+
         // Azure queue.
-        //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Queue.BrokerFactory(configuration.GetConnectionString("ServiceBus")));
+        //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Queue.BrokerFactory(sbConfiguration));
 
         // Azure topic.
-        //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Topic.BrokerFactory(configuration.GetConnectionString("ServiceBus")));
+        //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Topic.BrokerFactory(sbConfiguration));
       }
 
       // --> Add: DelaySettings.

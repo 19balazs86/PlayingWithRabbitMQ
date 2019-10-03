@@ -11,8 +11,8 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
 {
   public class BrokerFactory : BrokerFactoryBase<AzureTopicAttribute>
   {
-    public BrokerFactory(string connectionString, IAttributeProvider<AzureTopicAttribute> attributeProvider = null)
-      : base(connectionString, attributeProvider)
+    public BrokerFactory(ServiceBusConfiguration configuration, IAttributeProvider<AzureTopicAttribute> attributeProvider = null)
+      : base(configuration, attributeProvider)
     {
 
     }
@@ -28,9 +28,11 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
           return new Producer<T>(senderClient, topicAttribute.RouteKey);
 
         // Check whether the Topic exists otherwise create it.
-        await checkTopicExistsOrCreateAsync(topicAttribute.Topic, cancelToken);
+        if (!_configuration.SkipManagement)
+          await checkTopicExistsOrCreateAsync(topicAttribute.Topic, cancelToken);
 
-        senderClient = _senderClientsDic.GetOrAdd(topicAttribute.Topic, new MessageSender(_connectionString, topicAttribute.Topic));
+        senderClient = _senderClientsDic.GetOrAdd(topicAttribute.Topic,
+          new MessageSender(_configuration.ConnectionString, topicAttribute.Topic));
 
         return new Producer<T>(senderClient);
       }
@@ -47,19 +49,22 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
         AzureTopicAttribute topicAttribute = getAndValidateAttributeFor<T>();
 
         // Check whether the Queue exists otherwise create it.
-        await checkTopicExistsOrCreateAsync(topicAttribute.Topic, cancelToken);
+        if (!_configuration.SkipManagement)
+          await checkTopicExistsOrCreateAsync(topicAttribute.Topic, cancelToken);
 
         // Check whether the Subscription exists otherwise create it.
-        await checkSubscriptionExistsOrCreateAsync(topicAttribute.Topic, topicAttribute.Subscription, cancelToken);
+        if (!_configuration.SkipManagement)
+          await checkSubscriptionExistsOrCreateAsync(topicAttribute.Topic, topicAttribute.Subscription, cancelToken);
 
         //string subscriptionPath = EntityNameHelper.FormatSubscriptionPath(topicName, subscriptionName);
         //IMessageReceiver receiverClient = new MessageReceiver(connectionString, subscriptionPath);
 
         SubscriptionClient receiverClient
-          = new SubscriptionClient(_connectionString, topicAttribute.Topic, topicAttribute.Subscription);
+          = new SubscriptionClient(_configuration.ConnectionString, topicAttribute.Topic, topicAttribute.Subscription);
 
         // Check whether the Filter for RouteKey exists otherwise create it.
-        await checkSubscriptionFiltersAsync(receiverClient, topicAttribute);
+        if (!_configuration.SkipManagement)
+          await checkSubscriptionFiltersAsync(receiverClient, topicAttribute);
 
         return new Consumer<T>(receiverClient, topicAttribute.MaxConcurrentCalls);
       }
@@ -89,7 +94,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Topic
     private async Task checkSubscriptionExistsOrCreateAsync(string topic, string subscription, CancellationToken cancelToken)
     {
       if (!await _lazyManagementClient.Value.SubscriptionExistsAsync(topic, subscription, cancelToken))
-        await _lazyManagementClient.Value.CreateSubscriptionAsync(topic, subscription);
+        await _lazyManagementClient.Value.CreateSubscriptionAsync(topic, subscription, cancelToken);
     }
 
     private async Task checkSubscriptionFiltersAsync(SubscriptionClient subscriptionClient, AzureTopicAttribute topicAttribute)

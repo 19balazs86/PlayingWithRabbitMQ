@@ -10,7 +10,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 {
   public abstract class BrokerFactoryBase<A> : IBrokerFactory where A : AzureBaseAttribute
   {
-    protected readonly string _connectionString;
+    protected readonly ServiceBusConfiguration _configuration;
     private readonly IAttributeProvider<A> _attributeProvider;
 
     protected readonly Lazy<ManagementClient> _lazyManagementClient;
@@ -19,15 +19,12 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
     protected readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoresDic;
     protected readonly ConcurrentDictionary<Type, A> _attributesDic;
 
-    public BrokerFactoryBase(string connectionString, IAttributeProvider<A> attributeProvider = null)
+    public BrokerFactoryBase(ServiceBusConfiguration configuration, IAttributeProvider<A> attributeProvider = null)
     {
-      if (string.IsNullOrWhiteSpace(connectionString))
-        throw new ArgumentNullException(nameof(connectionString));
-
-      _connectionString  = connectionString;
+      _configuration     = configuration ?? throw new ArgumentNullException(nameof(configuration));
       _attributeProvider = attributeProvider ?? new SimpleAttributeProvider<A>();
 
-      _lazyManagementClient = new Lazy<ManagementClient>(new ManagementClient(connectionString));
+      _lazyManagementClient = new Lazy<ManagementClient>(new ManagementClient(configuration.ConnectionString));
 
       _senderClientsDic = new ConcurrentDictionary<string, ISenderClient>();
       _semaphoresDic    = new ConcurrentDictionary<string, SemaphoreSlim>();

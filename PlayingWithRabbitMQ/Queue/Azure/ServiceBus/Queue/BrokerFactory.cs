@@ -8,8 +8,8 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
 {
   public class BrokerFactory : BrokerFactoryBase<AzureQueueAttribute>
   {
-    public BrokerFactory(string connectionString, IAttributeProvider<AzureQueueAttribute> attributeProvider = null)
-      : base(connectionString, attributeProvider)
+    public BrokerFactory(ServiceBusConfiguration configuration, IAttributeProvider<AzureQueueAttribute> attributeProvider = null)
+      : base(configuration, attributeProvider)
     {
 
     }
@@ -25,9 +25,11 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
           return new Producer<T>(senderClient);
 
         // Check whether the Queue exists otherwise create it.
-        await checkQueueExistsOrCreateAsync(queueName, cancelToken);
+        if (!_configuration.SkipManagement)
+          await checkQueueExistsOrCreateAsync(queueName, cancelToken);
 
-        senderClient = _senderClientsDic.GetOrAdd(queueName, new MessageSender(_connectionString, queueName));
+        senderClient = _senderClientsDic.GetOrAdd(queueName,
+          new MessageSender(_configuration.ConnectionString, queueName));
 
         return new Producer<T>(senderClient);
       }
@@ -44,9 +46,10 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
         AzureQueueAttribute queueAttribute = getAndValidateAttributeFor<T>();
 
         // Check whether the Queue exists otherwise create it.
-        await checkQueueExistsOrCreateAsync(queueAttribute.QueueName, cancelToken);
+        if (!_configuration.SkipManagement)
+          await checkQueueExistsOrCreateAsync(queueAttribute.QueueName, cancelToken);
 
-        IReceiverClient receiverClient = new MessageReceiver(_connectionString, queueAttribute.QueueName);
+        IReceiverClient receiverClient = new MessageReceiver(_configuration.ConnectionString, queueAttribute.QueueName);
 
         return new Consumer<T>(receiverClient, queueAttribute.MaxConcurrentCalls);
       }
