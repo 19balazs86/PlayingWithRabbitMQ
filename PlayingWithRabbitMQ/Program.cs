@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,17 +15,17 @@ namespace PlayingWithRabbitMQ
 {
   public class Program
   {
-    public static async Task<int> Main(string[] args)
+    public static int Main(string[] args)
     {
       try
       {
         IHostBuilder hostBuilder = new HostBuilder()
-          .UseEnvironment(args.Contains("--prod") ? EnvironmentName.Production : EnvironmentName.Development)
+          .UseEnvironment(args.Contains("--prod") ? Environments.Production : Environments.Development)
           .ConfigureAppConfiguration(configureAppConfiguration)
           .ConfigureServices(configureServices)
           .UseSerilog(configureLogger);
 
-        await hostBuilder.RunConsoleAsync();
+        hostBuilder.Build().Run();
 
         return 0;
       }
