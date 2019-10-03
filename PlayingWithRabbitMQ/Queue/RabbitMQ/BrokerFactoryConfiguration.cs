@@ -36,6 +36,12 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// </summary>
     public string DefaultDeadLetterQueue { get; set; }
 
+    /// <summary>
+    /// BrokerFactory can create Exchanges and Queues if not exists.
+    /// Set it true, if you do not want this management process or the given user does not have management rights.
+    /// </summary>
+    public bool SkipManagement { get; set; } = true;
+
     public static void Validate(BrokerFactoryConfiguration configuration)
     {
       if (configuration == null)

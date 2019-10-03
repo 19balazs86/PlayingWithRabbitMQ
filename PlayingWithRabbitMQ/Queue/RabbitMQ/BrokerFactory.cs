@@ -81,7 +81,9 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         IModel model = _lazyConnection.Value.CreateModel();
 
         // Create the requested exchange.
-        model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
+        if (!_factoryConfiguration.SkipManagement)
+          model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
+
         model.ConfirmSelect();
 
         // --> Create: Producer.
@@ -111,30 +113,33 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
         // --> Create: Model.
         IModel model = _lazyConnection.Value.CreateModel();
 
-        // --> Initialize: DeadLetterQueue and DeadLetterExchange.
-        string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
-
-        if (!string.IsNullOrWhiteSpace(msgSettings.DeadLetterQueue))
-          deadLetterQueue = msgSettings.DeadLetterQueue;
-
-        model.QueueDeclare(deadLetterQueue, true, false, false);
-
-        model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true);
-
-        model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, msgSettings.QueueName);
-
-        // --> Initialize: The requested Queue.
-        Dictionary<string, object> declareArguments = new Dictionary<string, object>
+        if (!_factoryConfiguration.SkipManagement)
         {
-          ["x-dead-letter-exchange"]    = _factoryConfiguration.DefaultDeadLetterExchange,
-          ["x-dead-letter-routing-key"] = msgSettings.QueueName
-        };
+          // --> Initialize: DeadLetterQueue and DeadLetterExchange.
+          string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
 
-        model.QueueDeclare(msgSettings.QueueName, true, false, false, declareArguments);
+          if (!string.IsNullOrWhiteSpace(msgSettings.DeadLetterQueue))
+            deadLetterQueue = msgSettings.DeadLetterQueue;
 
-        // Create: Exchange and bind it with the queue.
-        model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
-        model.QueueBind(msgSettings.QueueName, msgSettings.ExchangeName, msgSettings.RouteKey ?? string.Empty);
+          model.QueueDeclare(deadLetterQueue, true, false, false);
+
+          model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true);
+
+          model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, msgSettings.QueueName);
+
+          // --> Initialize: The requested Queue.
+          Dictionary<string, object> declareArguments = new Dictionary<string, object>
+          {
+            ["x-dead-letter-exchange"]    = _factoryConfiguration.DefaultDeadLetterExchange,
+            ["x-dead-letter-routing-key"] = msgSettings.QueueName
+          };
+
+          model.QueueDeclare(msgSettings.QueueName, true, false, false, declareArguments);
+
+          // Create: Exchange and bind it with the queue.
+          model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
+          model.QueueBind(msgSettings.QueueName, msgSettings.ExchangeName, msgSettings.RouteKey ?? string.Empty);
+        }
 
         // --> Create: Consumer.
         IConsumer<T> consumer = new Consumer<T>(model, msgSettings.QueueName, msgSettings.PrefetchCount);

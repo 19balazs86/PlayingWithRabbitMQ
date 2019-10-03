@@ -47,7 +47,8 @@ namespace PlayingWithRabbitMQ
       {
         var brokerFactoryConfiguration = new BrokerFactoryConfiguration
         {
-          Url = configuration.GetConnectionString("RabbitMQ"),
+          Url            = configuration.GetConnectionString("RabbitMQ"),
+          SkipManagement = false,
           DefaultDeadLetterExchange = "message.morgue",
           DefaultDeadLetterQueue    = "message.morgue.sink"
         };
