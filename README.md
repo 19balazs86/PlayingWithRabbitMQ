@@ -45,11 +45,7 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 ##### 6) Azure Service Bus
 
 - Using queues and topics for general use without any extra features like duplicate detection and sessions, which is more for special business case.
-- Resources
-  - Microsoft: [Documentation](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) | [Microsoft.Azure.ServiceBus Namespace](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.servicebus?view=azure-dotnet).
-  - GitHub: [Samples](https://github.com/Azure/azure-service-bus/tree/master/samples/DotNet) | [Microsoft.Azure.ServiceBus source code](https://github.com/Azure/azure-sdk-for-net/tree/master/sdk/servicebus/Microsoft.Azure.ServiceBus/src).
-  - [Using Azure Service Bus Queues and Topics series](https://damienbod.com/2019/04/23/using-azure-service-bus-queues-with-asp-net-core-services/) *(Damien Bod)*.
-  - [Migrating to the New Azure Service Bus SDK](https://markheath.net/post/migrating-to-new-servicebus-sdk) *(Mark Heath)*.
+- Resources: [Playing with Azure Service Bus](https://github.com/19balazs86/AzureServiceBus).
 
 ### Components
 #### MessageSettingsAttribute
