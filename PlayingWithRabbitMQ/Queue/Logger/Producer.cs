@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.Logger
@@ -9,7 +9,7 @@ namespace PlayingWithRabbitMQ.Queue.Logger
   {
     public Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
-      string messageText = JsonConvert.SerializeObject(message);
+      string messageText = JsonSerializer.Serialize(message);
 
       Log.Verbose($"{typeof(T).Name} is published. {messageText}.");
 

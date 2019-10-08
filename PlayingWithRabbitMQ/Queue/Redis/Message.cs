@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace PlayingWithRabbitMQ.Queue.Redis
 {
@@ -7,7 +7,7 @@ namespace PlayingWithRabbitMQ.Queue.Redis
   {
     public string RawItem { get; private set; }
 
-    public T Item => JsonConvert.DeserializeObject<T>(RawItem);
+    public T Item => JsonSerializer.Deserialize<T>(RawItem);
 
     public Message(string message) => RawItem = message;
 

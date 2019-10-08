@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.FileSystem
@@ -15,7 +15,7 @@ namespace PlayingWithRabbitMQ.Queue.FileSystem
 
     public string RawItem => _lazyRawItem.Value;
 
-    public T Item => JsonConvert.DeserializeObject<T>(RawItem);
+    public T Item => JsonSerializer.Deserialize<T>(RawItem);
 
     public Message(string messageFullPath, string failedMessageFolderPath)
     {

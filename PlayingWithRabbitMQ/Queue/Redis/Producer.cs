@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using StackExchange.Redis;
 
@@ -26,7 +26,7 @@ namespace PlayingWithRabbitMQ.Queue.Redis
 
       try
       {
-        string messageText = JsonConvert.SerializeObject(message);
+        string messageText = JsonSerializer.Serialize(message);
 
         await _subscriber.PublishAsync(_channel, messageText);
       }

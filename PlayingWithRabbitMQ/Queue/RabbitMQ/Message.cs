@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -15,8 +15,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
 
     public string RawItem => Encoding.UTF8.GetString(_queueMessage.Body);
 
-    /// <exception cref="JsonReaderException"></exception>
-    public T Item => JsonConvert.DeserializeObject<T>(RawItem);
+    public T Item => JsonSerializer.Deserialize<T>(RawItem);
 
     public Message(IModel model, BasicDeliverEventArgs queueMessage)
     {

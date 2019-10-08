@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Text;
+using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
-using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
@@ -24,9 +24,14 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
     {
       try
       {
-        string messageJson = JsonConvert.SerializeObject(message);
+        Message msg;
 
-        Message msg = new Message(Encoding.UTF8.GetBytes(messageJson));
+        using (var memoryStream = new MemoryStream())
+        {
+          await JsonSerializer.SerializeAsync(memoryStream, message);
+
+          msg = new Message(memoryStream.ToArray());
+        }
 
         if (!string.IsNullOrWhiteSpace(_routeKey))
           msg.UserProperties.Add("RouteKey", _routeKey);

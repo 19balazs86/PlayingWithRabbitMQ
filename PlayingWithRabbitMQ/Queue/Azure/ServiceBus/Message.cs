@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
-using Newtonsoft.Json;
 using PlayingWithRabbitMQ.Queue.Exceptions;
 
 namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
@@ -15,7 +15,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus
 
     public string RawItem => Encoding.UTF8.GetString(_message.Body);
 
-    public T Item => JsonConvert.DeserializeObject<T>(RawItem);
+    public T Item => JsonSerializer.Deserialize<T>(RawItem);
 
     public Message(IReceiverClient receiverClient, Message message)
     {

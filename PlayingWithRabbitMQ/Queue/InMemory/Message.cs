@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Threading.Tasks;
 using Serilog;
 
 namespace PlayingWithRabbitMQ.Queue.InMemory
 {
   public class Message<T> : IMessage<T> where T : class
   {
-    public string RawItem => JsonConvert.SerializeObject(Item);
+    public string RawItem => JsonSerializer.Serialize(Item);
 
     public T Item { get; private set; }
 
