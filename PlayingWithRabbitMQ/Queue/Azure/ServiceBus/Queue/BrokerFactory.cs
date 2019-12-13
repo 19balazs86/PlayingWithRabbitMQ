@@ -28,8 +28,8 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
         if (!_configuration.SkipManagement)
           await checkQueueExistsOrCreateAsync(queueName, cancelToken);
 
-        senderClient = _senderClientsDic.GetOrAdd(queueName,
-          new MessageSender(_configuration.ConnectionString, queueName));
+        senderClient = _senderClientsDic.GetOrAdd(queueName, qName =>
+          new MessageSender(_configuration.ConnectionString, qName));
 
         return new Producer<T>(senderClient);
       }
@@ -61,7 +61,7 @@ namespace PlayingWithRabbitMQ.Queue.Azure.ServiceBus.Queue
 
     private async Task checkQueueExistsOrCreateAsync(string queueName, CancellationToken cancelToken)
     {
-      var semaphore = _semaphoresDic.GetOrAdd(queueName, new SemaphoreSlim(1, 1));
+      var semaphore = _semaphoresDic.GetOrAdd(queueName, _ => new SemaphoreSlim(1, 1));
 
       await semaphore.WaitAsync(cancelToken);
 
