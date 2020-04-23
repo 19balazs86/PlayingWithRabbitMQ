@@ -13,7 +13,7 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     private readonly IModel _model;
     private readonly BasicDeliverEventArgs _queueMessage;
 
-    public string RawItem => Encoding.UTF8.GetString(_queueMessage.Body);
+    public string RawItem => Encoding.UTF8.GetString(_queueMessage.Body.ToArray());
 
     /// <exception cref="JsonReaderException"></exception>
     public T Item => JsonConvert.DeserializeObject<T>(RawItem);

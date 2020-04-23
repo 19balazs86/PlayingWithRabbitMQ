@@ -186,11 +186,8 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
       connection.ConnectionShutdown += (object sender, ShutdownEventArgs e)
         => Log.Error("RabbitMQ connection is lost. {@ShutdownEventArgs}", e);
 
-      connection.ConnectionRecoveryError += (object sender, ConnectionRecoveryErrorEventArgs e)
+      connection.CallbackException += (object sender, CallbackExceptionEventArgs e)
         => Log.Error(e.Exception, "RabbitMQ connection recovery error.");
-
-      connection.RecoverySucceeded += (object sender, EventArgs e)
-        => Log.Information("RabbitMQ connection recovery succeeded.");
 
       return connection;
     }
