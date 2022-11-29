@@ -15,7 +15,7 @@
     <PackageReference Include="Scrutor" Version="4.2.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="StackExchange.Redis" Version="2.6.70" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.80" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
