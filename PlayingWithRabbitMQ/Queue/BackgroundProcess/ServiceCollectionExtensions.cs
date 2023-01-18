@@ -17,7 +17,10 @@ public static class ServiceCollectionExtensions
         Assembly assembly,
         ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
     {
-        foreach (TypeInfo definedType in assembly.DefinedTypes.Where(x => !x.IsInterface && !x.IsAbstract))
+        // Looking for non-generic interface implementations
+        // ...Where(x => typeof(INameOfInterface).IsAssignableFrom(x) && ...)
+
+        foreach (TypeInfo definedType in assembly.DefinedTypes.Where(x => x.IsClass && !x.IsInterface && !x.IsAbstract))
         {
             Type implementedInterface = definedType.ImplementedInterfaces
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == _messageHandlerType);
