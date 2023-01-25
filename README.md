@@ -9,9 +9,11 @@ This .Net Core application is a complete example (framework) to publish and cons
 In order to put it into play, you need a RabbitMQ server. Install it locally: [Windows](http://www.rabbitmq.com/install-windows.html) |  Docker | [CloudAMQP](https://www.cloudamqp.com/plans.html) free plan: Little Lemur - For Development.
 
 ##### .NET Libraries for RabbitMQ
-- RabbitMQ.Client: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client) | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client) | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html).
+- **RabbitMQ.Client**: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client) | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client) | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html).
 - [Mass Transit](http://masstransit-project.com): CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html) has a recommendation for this service bus implementation.
-- [RawRabbit](https://rawrabbit.readthedocs.io/en/master): Modern .NET client for communication over RabbitMq, which is written for .NET Core. [GitHub page](https://github.com/pardahlman/RawRabbit).
+  - [Using MassTransit in .Net](https://mbarkt3sto.hashnode.dev/setting-up-and-using-masstransit-in-aspnet-core) 📓*MBARK*
+
+- [RawRabbit](https://rawrabbit.readthedocs.io) on [GitHub](https://github.com/pardahlman/RawRabbit): Modern .NET client for communication over RabbitMq.
 - [Rebus](https://rebus.fm/): .NET service bus - an implementation of several useful messaging patterns.
 
 There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
