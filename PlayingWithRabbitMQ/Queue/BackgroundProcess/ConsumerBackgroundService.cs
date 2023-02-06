@@ -9,7 +9,7 @@ public class ConsumerBackgroundService<T> : BackgroundService where T : class
     private readonly Serilog.ILogger _logger = Log.ForContext<ConsumerBackgroundService<T>>();
 
     private readonly IBrokerFactory _brokerFactory;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     private readonly ActionBlock<IMessage<T>> _actionBlock;
 
@@ -17,10 +17,10 @@ public class ConsumerBackgroundService<T> : BackgroundService where T : class
 
     private CancellationToken _stoppingToken;
 
-    public ConsumerBackgroundService(IBrokerFactory brokerFactory, IServiceProvider serviceProvider)
+    public ConsumerBackgroundService(IBrokerFactory brokerFactory, IServiceScopeFactory serviceScopeFactory)
     {
-        _brokerFactory   = brokerFactory;
-        _serviceProvider = serviceProvider;
+        _brokerFactory       = brokerFactory;
+        _serviceScopeFactory = serviceScopeFactory;
 
         // Set the MaxDegreeOfParallelism value.
         var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
@@ -71,7 +71,7 @@ public class ConsumerBackgroundService<T> : BackgroundService where T : class
 
         try
         {
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = _serviceScopeFactory.CreateScope())
             {
                 var messageHandler = scope.ServiceProvider.GetRequiredService<IMessageHandler<T>>();
 

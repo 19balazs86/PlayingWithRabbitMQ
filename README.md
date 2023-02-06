@@ -12,7 +12,8 @@ In order to put it into play, you need a RabbitMQ server. Install it locally: [W
 - **RabbitMQ.Client**: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client) | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client) | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html).
 - [Mass Transit](http://masstransit-project.com): CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html) has a recommendation for this service bus implementation.
   - [Using MassTransit in .Net](https://mbarkt3sto.hashnode.dev/setting-up-and-using-masstransit-in-aspnet-core) 📓*MBARK*
-
+  - [Getting start with MassTransit and RabbitMQ](https://youtu.be/CTKWFMZVIWA) 📽️*15min-Milan*
+  
 - [RawRabbit](https://rawrabbit.readthedocs.io) on [GitHub](https://github.com/pardahlman/RawRabbit): Modern .NET client for communication over RabbitMq.
 - [Rebus](https://rebus.fm/): .NET service bus - an implementation of several useful messaging patterns.
 
