@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         // Looking for non-generic interface implementations
         // ...Where(x => typeof(INameOfInterface).IsAssignableFrom(x) && ...)
 
-        foreach (TypeInfo definedType in assembly.DefinedTypes.Where(x => x.IsClass && !x.IsInterface && !x.IsAbstract))
+        foreach (TypeInfo definedType in assembly.DefinedTypes.Where(x => x is { IsClass: true, IsInterface: false, IsAbstract: false }))
         {
             Type implementedInterface = definedType.ImplementedInterfaces
                 .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == _messageHandlerType);
