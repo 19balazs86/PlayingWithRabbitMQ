@@ -11,11 +11,10 @@ In order to put it into play, you need a RabbitMQ server. Install it locally: [W
 ##### .NET Libraries for RabbitMQ
 - **RabbitMQ.Client**: The official client library. [Nuget package](https://www.nuget.org/packages/RabbitMQ.Client) | [GitHub page](https://github.com/rabbitmq/rabbitmq-dotnet-client) | [API Documentation](https://rabbitmq.github.io/rabbitmq-dotnet-client/index.html).
 - [Mass Transit](http://masstransit-project.com): CloudAMQP [documentation section](https://www.cloudamqp.com/docs/index.html) has a recommendation for this service bus implementation.
-  - [Using MassTransit in .Net](https://mbarkt3sto.hashnode.dev/setting-up-and-using-masstransit-in-aspnet-core) 📓*MBARK*
-  - [Getting start with MassTransit and RabbitMQ](https://youtu.be/CTKWFMZVIWA) 📽️*15min-Milan*
-  
+  - [Using MassTransit with RabbitMQ](https://mbarkt3sto.hashnode.dev/setting-up-and-using-masstransit-in-aspnet-core) 📓*MBARK*
+  - [Getting start with MassTransit with RabbitMQ](https://youtu.be/CTKWFMZVIWA) 📽️*15min-Milan*
 - [RawRabbit](https://rawrabbit.readthedocs.io) on [GitHub](https://github.com/pardahlman/RawRabbit): Modern .NET client for communication over RabbitMq.
-- [Rebus](https://rebus.fm/): .NET service bus - an implementation of several useful messaging patterns.
+- [Rebus](https://rebus.fm): .NET service bus - an implementation of several useful messaging patterns.
 
 There is a benefit to start with the RabbitMQ.Client, that you can learn and understand the basics of RabbitMQ.
 
