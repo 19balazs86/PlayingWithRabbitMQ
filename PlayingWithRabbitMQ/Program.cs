@@ -10,100 +10,78 @@ namespace PlayingWithRabbitMQ;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static void Main(string[] args)
     {
-        try
+        HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+
+        builder.Services.AddSerilog(configureSerilog);
+
+        var services      = builder.Services;
+        var configuration = builder.Configuration;
+
+        // Add services to the container
         {
-            IHostBuilder hostBuilder = new HostBuilder()
-                .UseEnvironment(args.Contains("--prod") ? Environments.Production : Environments.Development)
-                .ConfigureAppConfiguration(configureAppConfiguration)
-                .ConfigureServices(configureServices)
-                .UseSerilog(configureLogger);
-
-            hostBuilder.Build().Run();
-
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An exception occurred starting the Host. Message: '{ex.Message}'");
-
-            return -1;
-        }
-    }
-
-    private static void configureServices(HostBuilderContext hostContext, IServiceCollection services)
-    {
-        IConfiguration configuration = hostContext.Configuration;
-
-        // --> Add: BrokerFactory depending on the environment.
-        if (hostContext.HostingEnvironment.IsProduction())
-        {
-            var brokerFactoryConfiguration = new BrokerFactoryConfiguration
+            // --> Add: BrokerFactory depending on the environment.
+            if (builder.Environment.IsProduction())
             {
-                Url                       = configuration.GetConnectionString("RabbitMQ"),
-                SkipManagement            = false,
-                DefaultDeadLetterExchange = "message.morgue",
-                DefaultDeadLetterQueue    = "message.morgue.sink"
-            };
+                var brokerFactoryConfiguration = new BrokerFactoryConfiguration
+                {
+                    Url                       = configuration.GetConnectionString("RabbitMQ"),
+                    SkipManagement            = false,
+                    DefaultDeadLetterExchange = "message.morgue",
+                    DefaultDeadLetterQueue    = "message.morgue.sink"
+                };
 
-            services
-              .AddSingleton(brokerFactoryConfiguration)
-              .AddSingleton<IBrokerFactory, BrokerFactory>();
-        }
-        else
-        {
-            // In-memory queuing.
-            services.AddSingleton<IBrokerFactory, Queue.InMemory.BrokerFactory>();
+                services.AddSingleton(brokerFactoryConfiguration);
 
-            // File system queuing.
-            //services.AddSingleton<IBrokerFactory>(new Queue.FileSystem.BrokerFactory(@"d:\Downloads\Messages"));
-
-            // Redis pub/sub messaging.
-            //services.AddSingleton<IBrokerFactory>(new Queue.Redis.BrokerFactory());
-
-            var sbConfiguration = new Queue.Azure.ServiceBus.ServiceBusConfiguration
+                services.AddSingleton<IBrokerFactory, BrokerFactory>();
+            }
+            else
             {
-                ConnectionString = configuration.GetConnectionString("ServiceBus"),
-                SkipManagement = false
-            };
+                // --> In-memory queuing
+                services.AddSingleton<IBrokerFactory, Queue.InMemory.BrokerFactory>();
 
-            // Azure queue.
-            //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Queue.BrokerFactory(sbConfiguration));
+                // --> File system queuing
+                //services.AddSingleton<IBrokerFactory>(new Queue.FileSystem.BrokerFactory(@"d:\Downloads\Messages"));
 
-            // Azure topic.
-            //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Topic.BrokerFactory(sbConfiguration));
+                // --> Redis pub/sub messaging
+                //services.AddSingleton<IBrokerFactory>(new Queue.Redis.BrokerFactory());
+
+                var sbConfiguration = new Queue.Azure.ServiceBus.ServiceBusConfiguration
+                {
+                    ConnectionString = configuration.GetConnectionString("ServiceBus"),
+                    SkipManagement = false
+                };
+
+                // --> Azure: Queue
+                //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Queue.BrokerFactory(sbConfiguration));
+
+                // --> Azure: Topic
+                //services.AddSingleton<IBrokerFactory>(x => new Queue.Azure.ServiceBus.Topic.BrokerFactory(sbConfiguration));
+            }
+
+            // --> Add: DelaySettings
+            services.AddSingleton(configuration.GetSection(nameof(DelaySettings)).Get<DelaySettings>());
+
+            // --> Add: Message handlers with own extension method
+            services.AddMessageHandlers(ServiceLifetime.Singleton);
+
+            // --> Add: Background services
+            // Message consumers in BackgroundService
+            services.AddHostedService<ConsumerBackgroundService<LoginMessage>>();
+            services.AddHostedService<ConsumerBackgroundService<PurchaseMessage>>();
+
+            // Demo purpose.
+            services.AddHostedService<ProducerBackgroundService>();
         }
 
-        // --> Add: DelaySettings.
-        services.AddSingleton(configuration.BindTo<DelaySettings>());
-
-        // --> Add: Message handlers with own extension method
-        services.AddMessageHandlers(ServiceLifetime.Singleton);
-
-        // --> Add: Background services.
-        // Message consumers in BackgroundService.
-        services.AddHostedService<ConsumerBackgroundService<LoginMessage>>();
-        services.AddHostedService<ConsumerBackgroundService<PurchaseMessage>>();
-
-        // Demo purpose.
-        services.AddHostedService<ProducerBackgroundService>();
+        builder.Build().Run();
     }
-
-    private static void configureAppConfiguration(HostBuilderContext hostContext, IConfigurationBuilder configBuilder)
-    {
-        configBuilder
-          .AddJsonFile("appsettings.json", false)
-          .AddEnvironmentVariables();
-
-        // Custom connection string from environment variable, key: CUSTOMCONNSTR_RabbitMQ.
-    }
-
-    private static void configureLogger(HostBuilderContext hostContext, LoggerConfiguration configuration)
+    private static void configureSerilog(LoggerConfiguration configuration)
     {
         configuration
-          .MinimumLevel.Debug()
-          .MinimumLevel.Override("PlayingWithRabbitMQ.Queue.BackgroundProcess", LogEventLevel.Information)
-          .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message}{NewLine}{Exception}");
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("PlayingWithRabbitMQ.Queue.BackgroundProcess", LogEventLevel.Information)
+            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message}{NewLine}{Exception}");
     }
 }
