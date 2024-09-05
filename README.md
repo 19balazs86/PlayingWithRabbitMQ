@@ -40,6 +40,7 @@ There is a benefit to start with the RabbitMQ.Client, that you can learn and und
 
 ##### 4)  Redis
 - This is a pub/sub messaging solution, not queuing.
+- [Redis channels and keyspace notifications](https://youtu.be/jRTChmMRCIA) 📽️*Nick*
 
 ##### 5)  Logger (for test)
 - Just write a log...
