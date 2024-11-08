@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using PlayingWithRabbitMQ.Queue.Exceptions;
+﻿using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using Serilog;
+using System.Collections.Concurrent;
 
-namespace PlayingWithRabbitMQ.Queue.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ;
+
+public sealed class BrokerFactory : IBrokerFactory
 {
-  public class BrokerFactory : IBrokerFactory
-  {
     private readonly BrokerFactoryConfiguration _factoryConfiguration;
+
     private readonly IAttributeProvider<MessageSettingsAttribute> _attributeProvider;
 
-    private readonly IConnectionFactory _connectionFactory;
+    private readonly ConnectionFactory _connectionFactory;
 
-    private readonly Lazy<IConnection> _lazyConnection;
+    private readonly Lazy<Task<IConnection>> _lazyConnection;
 
     private readonly ConcurrentDictionary<Type, MessageSettingsAttribute> _attributesDic;
 
@@ -27,41 +23,41 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException">Thrown, if the configuration is wrong.</exception>
     /// <exception cref="ArgumentException">Thrown, if the configuration is wrong.</exception>
     public BrokerFactory(
-      BrokerFactoryConfiguration configuration,
-      IAttributeProvider<MessageSettingsAttribute> attributeProvider = null)
+        BrokerFactoryConfiguration                   configuration,
+        IAttributeProvider<MessageSettingsAttribute> attributeProvider = null)
     {
-      BrokerFactoryConfiguration.Validate(configuration);
+        BrokerFactoryConfiguration.Validate(configuration);
 
-      if (string.IsNullOrWhiteSpace(configuration.Url))
-      {
-        _connectionFactory = new ConnectionFactory
+        if (string.IsNullOrWhiteSpace(configuration.Url))
         {
-          HostName                 = configuration.HostName,
-          Port                     = configuration.HostPort,
-          VirtualHost              = configuration.VirtualHost,
-          UserName                 = configuration.UserName,
-          Password                 = configuration.Password,
-          AutomaticRecoveryEnabled = configuration.NetworkRecoveryIntervalSeconds > 0,
-          NetworkRecoveryInterval  = TimeSpan.FromSeconds(configuration.NetworkRecoveryIntervalSeconds)
-        };
-      }
-      else
-      {
-        _connectionFactory = new ConnectionFactory
+            _connectionFactory = new ConnectionFactory
+            {
+                HostName                 = configuration.HostName,
+                Port                     = configuration.HostPort,
+                VirtualHost              = configuration.VirtualHost,
+                UserName                 = configuration.UserName,
+                Password                 = configuration.Password,
+                AutomaticRecoveryEnabled = configuration.NetworkRecoveryIntervalSeconds > 0,
+                NetworkRecoveryInterval  = TimeSpan.FromSeconds(configuration.NetworkRecoveryIntervalSeconds)
+            };
+        }
+        else
         {
-          Uri                      = new Uri(configuration.Url),
-          AutomaticRecoveryEnabled = configuration.NetworkRecoveryIntervalSeconds > 0,
-          NetworkRecoveryInterval  = TimeSpan.FromSeconds(configuration.NetworkRecoveryIntervalSeconds)
-        };
-      }
+            _connectionFactory = new ConnectionFactory
+            {
+                Uri                      = new Uri(configuration.Url),
+                AutomaticRecoveryEnabled = configuration.NetworkRecoveryIntervalSeconds > 0,
+                NetworkRecoveryInterval  = TimeSpan.FromSeconds(configuration.NetworkRecoveryIntervalSeconds)
+            };
+        }
 
-      _factoryConfiguration = configuration;
+        _factoryConfiguration = configuration;
 
-      _attributeProvider = attributeProvider ?? new SimpleAttributeProvider<MessageSettingsAttribute>();
+        _attributeProvider = attributeProvider ?? new SimpleAttributeProvider<MessageSettingsAttribute>();
 
-      _lazyConnection = new Lazy<IConnection>(createConnection);
+        _lazyConnection = new Lazy<Task<IConnection>>(createConnection);
 
-      _attributesDic = new ConcurrentDictionary<Type, MessageSettingsAttribute>();
+        _attributesDic = new ConcurrentDictionary<Type, MessageSettingsAttribute>();
     }
 
     /// <summary>
@@ -71,30 +67,29 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Task<IProducer<T>> CreateProducerAsync<T>(CancellationToken cancelToken = default) where T : class
+    public async Task<IProducer<T>> CreateProducerAsync<T>(CancellationToken cancelToken = default) where T : class
     {
-      MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
+        MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 
-      try
-      {
-        // --> Create: Model.
-        IModel model = _lazyConnection.Value.CreateModel();
+        try
+        {
+            IConnection connection = await _lazyConnection.Value;
 
-        // Create the requested exchange.
-        if (!_factoryConfiguration.SkipManagement)
-          model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
+            IChannel channel = await connection.CreateChannelAsync(cancellationToken: cancelToken);
 
-        model.ConfirmSelect();
+            // Create the requested exchange.
+            if (!_factoryConfiguration.SkipManagement)
+            {
+                await channel.ExchangeDeclareAsync(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true, cancellationToken: cancelToken);
+            }
 
-        // --> Create: Producer.
-        IProducer<T> producer = new Producer<T>(model, msgSettings.ExchangeName, msgSettings.RouteKey, msgSettings.DeliveryMode);
-
-        return Task.FromResult(producer);
-      }
-      catch (Exception ex)
-      {
-        throw new BrokerFactoryException("Failed to create Producer.", ex);
-      }
+            // --> Create: Producer.
+            return new Producer<T>(channel, msgSettings.ExchangeName, msgSettings.RouteKey, msgSettings.DeliveryMode);
+        }
+        catch (Exception ex)
+        {
+            throw new BrokerFactoryException("Failed to create Producer.", ex);
+        }
     }
 
     /// <summary>
@@ -104,58 +99,59 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Task<IConsumer<T>> CreateConsumerAsync<T>(CancellationToken cancelToken = default) where T : class
+    public async Task<IConsumer<T>> CreateConsumerAsync<T>(CancellationToken cancelToken = default) where T : class
     {
-      MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
+        MessageSettingsAttribute msgSettings = getAndValidateSettingsFor<T>();
 
-      try
-      {
-        // --> Create: Model.
-        IModel model = _lazyConnection.Value.CreateModel();
-
-        if (!_factoryConfiguration.SkipManagement)
+        try
         {
-          // --> Initialize: DeadLetterQueue and DeadLetterExchange.
-          string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
+            IConnection connection = await _lazyConnection.Value;
 
-          if (!string.IsNullOrWhiteSpace(msgSettings.DeadLetterQueue))
-            deadLetterQueue = msgSettings.DeadLetterQueue;
+            IChannel channel = await connection.CreateChannelAsync(cancellationToken: cancelToken);
 
-          model.QueueDeclare(deadLetterQueue, true, false, false);
+            if (!_factoryConfiguration.SkipManagement)
+            {
+                // --> Initialize: DeadLetterQueue and DeadLetterExchange.
+                string deadLetterQueue = _factoryConfiguration.DefaultDeadLetterQueue;
 
-          model.ExchangeDeclare(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true);
+                if (!string.IsNullOrWhiteSpace(msgSettings.DeadLetterQueue))
+                {
+                    deadLetterQueue = msgSettings.DeadLetterQueue;
+                }
 
-          model.QueueBind(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, msgSettings.QueueName);
+                await channel.QueueDeclareAsync(deadLetterQueue, true, false, false, cancellationToken: cancelToken);
 
-          // --> Initialize: The requested Queue.
-          Dictionary<string, object> declareArguments = new Dictionary<string, object>
-          {
-            ["x-dead-letter-exchange"]    = _factoryConfiguration.DefaultDeadLetterExchange,
-            ["x-dead-letter-routing-key"] = msgSettings.QueueName
-          };
+                await channel.ExchangeDeclareAsync(_factoryConfiguration.DefaultDeadLetterExchange, ExchangeType.Direct.ToString().ToLower(), true, cancellationToken: cancelToken);
 
-          model.QueueDeclare(msgSettings.QueueName, true, false, false, declareArguments);
+                await channel.QueueBindAsync(deadLetterQueue, _factoryConfiguration.DefaultDeadLetterExchange, msgSettings.QueueName, cancellationToken: cancelToken);
 
-          // Create: Exchange and bind it with the queue.
-          model.ExchangeDeclare(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true);
-          model.QueueBind(msgSettings.QueueName, msgSettings.ExchangeName, msgSettings.RouteKey ?? string.Empty);
+                // --> Initialize: The requested Queue.
+                var declareArguments = new Dictionary<string, object>
+                {
+                    ["x-dead-letter-exchange"]    = _factoryConfiguration.DefaultDeadLetterExchange,
+                    ["x-dead-letter-routing-key"] = msgSettings.QueueName
+                };
+
+                await channel.QueueDeclareAsync(msgSettings.QueueName, true, false, false, declareArguments, cancellationToken: cancelToken);
+
+                // Create: Exchange and bind it with the queue.
+                await channel.ExchangeDeclareAsync(msgSettings.ExchangeName, msgSettings.ExchangeType.ToString().ToLower(), true, cancellationToken: cancelToken);
+                await channel.QueueBindAsync(msgSettings.QueueName, msgSettings.ExchangeName, msgSettings.RouteKey ?? string.Empty, cancellationToken: cancelToken);
+            }
+
+            // --> Create: Consumer.
+            return new Consumer<T>(channel, msgSettings.QueueName, msgSettings.PrefetchCount);
         }
-
-        // --> Create: Consumer.
-        IConsumer<T> consumer = new Consumer<T>(model, msgSettings.QueueName, msgSettings.PrefetchCount);
-
-        return Task.FromResult(consumer);
-      }
-      catch (Exception ex)
-      {
-        throw new BrokerFactoryException("Failed to create Consumer.", ex);
-      }
+        catch (Exception ex)
+        {
+            throw new BrokerFactoryException("Failed to create Consumer.", ex);
+        }
     }
 
     public void Dispose()
     {
-      if (_lazyConnection.IsValueCreated)
-        _lazyConnection.Value.Dispose();
+        if (_lazyConnection.IsValueCreated)
+            _lazyConnection.Value.Dispose();
     }
 
     /// <exception cref="ArgumentNullException"></exception>
@@ -163,33 +159,40 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     private MessageSettingsAttribute getAndValidateSettingsFor<T>() where T : class
     {
-      Type typeFor = typeof(T);
+        Type typeFor = typeof(T);
 
-      if (_attributesDic.TryGetValue(typeFor, out MessageSettingsAttribute msgSettings))
-        return msgSettings;
+        if (_attributesDic.TryGetValue(typeFor, out MessageSettingsAttribute msgSettings))
+            return msgSettings;
 
-      msgSettings = _attributeProvider.GetAttributeFor<T>();
+        msgSettings = _attributeProvider.GetAttributeFor<T>();
 
-      if (msgSettings is null)
-        throw new ArgumentNullException(nameof(msgSettings), $"MessageSettings is not present for the {typeof(T).Name}.");
+        if (msgSettings is null)
+            throw new ArgumentNullException(nameof(msgSettings), $"MessageSettings is not present for the {typeof(T).Name}.");
 
-      msgSettings.Validate();
+        msgSettings.Validate();
 
-      return _attributesDic.GetOrAdd(typeFor, msgSettings);
+        return _attributesDic.GetOrAdd(typeFor, msgSettings);
     }
 
-    private IConnection createConnection()
+    private async Task<IConnection> createConnection()
     {
-      IConnection connection = _connectionFactory.CreateConnection();
+        IConnection connection = await _connectionFactory.CreateConnectionAsync();
 
-      // --> Event handlers.
-      connection.ConnectionShutdown += (object sender, ShutdownEventArgs e)
-        => Log.Error("RabbitMQ connection is lost. {@ShutdownEventArgs}", e);
+        // --> Event handlers.
+        connection.ConnectionShutdownAsync += (_, eventArgs) =>
+        {
+            Log.Error("RabbitMQ connection is lost. {@ShutdownEventArgs}", eventArgs);
 
-      connection.CallbackException += (object sender, CallbackExceptionEventArgs e)
-        => Log.Error(e.Exception, "RabbitMQ connection recovery error.");
+            return Task.CompletedTask;
+        };
 
-      return connection;
+        connection.CallbackExceptionAsync += (_, eventArgs) =>
+        {
+            Log.Error(eventArgs.Exception, "RabbitMQ connection recovery error.");
+
+            return Task.CompletedTask;
+        };
+
+        return connection;
     }
-  }
 }

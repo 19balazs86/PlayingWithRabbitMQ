@@ -1,46 +1,48 @@
-﻿using System;
-using System.Reactive.Linq;
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
-namespace PlayingWithRabbitMQ.Queue.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ;
+
+public sealed class Consumer<T> : IConsumer<T> where T : class
 {
-  public class Consumer<T> : IConsumer<T> where T : class
-  {
-    private readonly IModel _model;
+    private readonly IChannel _channel;
+
+    private readonly Subject<IMessage<T>> _subject;
+
+    private readonly AsyncEventingBasicConsumer _asyncEventingConsumer;
 
     public IObservable<IMessage<T>> MessageSource { get; private set; }
 
-    public Consumer(IModel model, string queueName, ushort prefetchCount = 5)
+    public Consumer(IChannel channel, string queueName, ushort prefetchCount = 5)
     {
-      _model = model;
+        _channel = channel;
 
-      _model.BasicQos(0, prefetchCount, false);
+        _subject = new Subject<IMessage<T>>();
 
-      var consumer = new EventingBasicConsumer(_model);
+        MessageSource = _subject.AsObservable();
 
-      MessageSource = Observable.FromEvent<EventHandler<BasicDeliverEventArgs>, BasicDeliverEventArgs>(
-        // Conversion.
-        action => (sender, e) => action(e),
-        // Add handler / observer.
-        handler =>
-        {
-          consumer.Received += handler;
+        _asyncEventingConsumer = new AsyncEventingBasicConsumer(channel);
 
-          if (!consumer.IsRunning)
-            _model.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
-        },
-        // Remove handler / observer.
-        handler =>
-        {
-          if (consumer.IsRunning)
-            consumer.OnCancel();
+        _asyncEventingConsumer.ReceivedAsync += consumerOnReceived;
 
-          consumer.Received -= handler;
-        })
-        .Select(queueMessage => new Message<T>(_model, queueMessage));
+        _channel.BasicQosAsync(0, prefetchCount, false).GetAwaiter().GetResult();
+
+        _channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: _asyncEventingConsumer).GetAwaiter().GetResult();
     }
 
-    public void Dispose() => _model.Dispose();
-  }
+    private Task consumerOnReceived(object sender, BasicDeliverEventArgs deliverEventArgs)
+    {
+        _subject.OnNext(new Message<T>(_channel, deliverEventArgs));
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _asyncEventingConsumer.ReceivedAsync -= consumerOnReceived;
+
+        _channel.Dispose();
+    }
 }

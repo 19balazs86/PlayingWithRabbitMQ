@@ -1,28 +1,46 @@
-﻿using System;
-using System.Net.Mime;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using PlayingWithRabbitMQ.Queue.Exceptions;
+﻿using PlayingWithRabbitMQ.Queue.Exceptions;
 using RabbitMQ.Client;
+using System.Text.Json;
 
-namespace PlayingWithRabbitMQ.Queue.RabbitMQ
+namespace PlayingWithRabbitMQ.Queue.RabbitMQ;
+
+public sealed class Producer<T>(IChannel _channel, string _exchangeName, string _routingKey, DeliveryMode _deliveryMode)
+    : IProducer<T> where T : class
 {
-  public class Producer<T> : IProducer<T> where T : class
-  {
-    private readonly IModel _model;
+    /// <summary>
+    /// Publish a message.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ProducerException"></exception>
+    /// <exception cref="ObjectDisposedException"></exception>
+    private async Task publish(byte[] message, CancellationToken ct)
+    {
+        ObjectDisposedException.ThrowIf(_channel.IsClosed, "Producer is already disposed");
 
-    private readonly string _exchangeName;
-    private readonly string _routingKey;
-    private readonly DeliveryMode _deliveryMode;
+        if (message is null || message.Length == 0)
+        {
+            throw new ArgumentNullException(nameof(message));
+        }
 
-    public Producer(IModel model, string exchangeName, string routingKey, DeliveryMode deliveryMode)
-    {    
-      _model        = model;      
-      _exchangeName = exchangeName;
-      _routingKey   = routingKey;
-      _deliveryMode = deliveryMode;
+        // var props = new BasicProperties
+        // {
+        //     ContentType     = MediaTypeNames.Application.Json,
+        //     ContentEncoding = Encoding.UTF8.WebName,
+        //     DeliveryMode    = _deliveryMode == DeliveryMode.Persistent ? DeliveryModes.Persistent : DeliveryModes.Transient
+        // };
+        //
+        // var publicationAddress = new PublicationAddress("exchangeType???", _exchangeName, _routingKey);
+
+        try
+        {
+            // await _channel.BasicPublishAsync(publicationAddress, props, message, ct);
+
+            await _channel.BasicPublishAsync(_exchangeName, _routingKey, message, ct);
+        }
+        catch (Exception ex)
+        {
+            throw new ProducerException("Failed to publish the message with BasicPublish.", ex);
+        }
     }
 
     /// <summary>
@@ -31,50 +49,14 @@ namespace PlayingWithRabbitMQ.Queue.RabbitMQ
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ProducerException"></exception>
     /// <exception cref="ObjectDisposedException"></exception>
-    private void publish(byte[] message)
+    public async Task PublishAsync(T message, CancellationToken cancelToken = default)
     {
-      if (_model.IsClosed)
-        throw new ObjectDisposedException("Producer is already disposed.");
+        ArgumentNullException.ThrowIfNull(message);
 
-      if (message is null || message.Length == 0)
-        throw new ArgumentNullException(nameof(message));
+        byte[] messageBytes = JsonSerializer.SerializeToUtf8Bytes(message);
 
-      IBasicProperties props = _model.CreateBasicProperties();
-
-      props.ContentType     = MediaTypeNames.Application.Json;
-      props.ContentEncoding = Encoding.UTF8.WebName;
-      props.DeliveryMode    = (byte)_deliveryMode;
-
-      try
-      {
-        _model.BasicPublish(_exchangeName, _routingKey, props, message);
-
-        _model.WaitForConfirmsOrDie(TimeSpan.FromSeconds(1));
-      }
-      catch (Exception ex)
-      {
-        throw new ProducerException("Failed to publish the message with BasicPublish.", ex);
-      }
+        await publish(messageBytes, cancelToken);
     }
 
-    /// <summary>
-    /// Publish a message.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ProducerException"></exception>
-    /// <exception cref="ObjectDisposedException"></exception>
-    public Task PublishAsync(T message, CancellationToken cancelToken = default)
-    {
-      if (message is null)
-        throw new ArgumentNullException(nameof(message));
-
-      string messageText = JsonConvert.SerializeObject(message);
-
-      publish(Encoding.UTF8.GetBytes(messageText));
-
-      return Task.CompletedTask;
-    }
-
-    public void Dispose() => _model.Dispose();
-  }
+    public void Dispose() => _channel.Dispose();
 }
