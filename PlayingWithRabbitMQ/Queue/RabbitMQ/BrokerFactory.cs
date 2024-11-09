@@ -140,7 +140,13 @@ public sealed class BrokerFactory : IBrokerFactory
             }
 
             // --> Create: Consumer.
-            return new Consumer<T>(channel, msgSettings.QueueName, msgSettings.PrefetchCount);
+            var consumer = new Consumer<T>(channel);
+
+            await channel.BasicQosAsync(0, msgSettings.PrefetchCount, false, cancellationToken: cancelToken);
+
+            await channel.BasicConsumeAsync(queue: msgSettings.QueueName, autoAck: false, consumer.EventingConsumer, cancelToken);
+
+            return consumer;
         }
         catch (Exception ex)
         {

@@ -11,11 +11,11 @@ public sealed class Consumer<T> : IConsumer<T> where T : class
 
     private readonly Subject<IMessage<T>> _subject;
 
-    private readonly AsyncEventingBasicConsumer _asyncEventingConsumer;
+    public AsyncEventingBasicConsumer EventingConsumer { get; }
 
-    public IObservable<IMessage<T>> MessageSource { get; private set; }
+    public IObservable<IMessage<T>> MessageSource { get; }
 
-    public Consumer(IChannel channel, string queueName, ushort prefetchCount = 5)
+    public Consumer(IChannel channel)
     {
         _channel = channel;
 
@@ -23,25 +23,25 @@ public sealed class Consumer<T> : IConsumer<T> where T : class
 
         MessageSource = _subject.AsObservable();
 
-        _asyncEventingConsumer = new AsyncEventingBasicConsumer(channel);
+        EventingConsumer = new AsyncEventingBasicConsumer(channel);
 
-        _asyncEventingConsumer.ReceivedAsync += consumerOnReceived;
-
-        _channel.BasicQosAsync(0, prefetchCount, false).GetAwaiter().GetResult();
-
-        _channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: _asyncEventingConsumer).GetAwaiter().GetResult();
+        EventingConsumer.ReceivedAsync += consumerOnReceived;
     }
 
     private Task consumerOnReceived(object sender, BasicDeliverEventArgs deliverEventArgs)
     {
-        _subject.OnNext(new Message<T>(_channel, deliverEventArgs));
+        var message = new Message<T>(_channel, deliverEventArgs);
+
+        _subject.OnNext(message);
 
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _asyncEventingConsumer.ReceivedAsync -= consumerOnReceived;
+        EventingConsumer.ReceivedAsync -= consumerOnReceived;
+
+        _subject.Dispose();
 
         _channel.Dispose();
     }
